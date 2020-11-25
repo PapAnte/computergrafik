@@ -21,7 +21,7 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
     Vector2 divisionSize;
 
     //boolean ob x und y getauscht worden sind
-    bool swapped = false;
+    //bool swapped = false;
 
     //original mRows und mCols
     int mRows_original;
@@ -34,7 +34,8 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
         mCols_original = mCols;
 
         // Debug für ungültigen Wert 0 und > 128 Zeilen/Spalten
-        if (mRows == 0 || mCols == 0 || mRows > 128 || mCols > 128)
+        // edit this: || mRows != mCols || ((mRows & (mRows - 1)) != 0)
+        if (mRows == 0 || mCols == 0 || mRows > 128 || mCols > 128 )
         {
             Debug.Log("ungültiger Zeilen/Spalten Wert");
 
@@ -43,7 +44,7 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
             mRows = mCols_original;
             mCols = mRows_original;
 
-            swapped = true;
+            //swapped = true;
 
             divisionSize = new Vector2((mSize / mRows), (mSize / mCols));
 
@@ -103,16 +104,20 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
             }
         }
 
+        //Debug.Log("mCols_original =" + mCols_original);
+        //Debug.Log("mRows_original =" + mRows_original);
         //Random Höhenkalkulation der Rechteck-Eckpunkt Vertices
         mVerts[0].y = Random.Range(-mHeight, mHeight);
         mVerts[mCols_original].y = Random.Range(-mHeight, mHeight);
         mVerts[mVerts.Length - 1].y = Random.Range(-mHeight, mHeight);
         mVerts[mVerts.Length - 1 - mCols_original].y = Random.Range(-mHeight, mHeight);
 
+        //Debug.Log("mVerts[mCols_original].y = " + mVerts[mCols_original].y);
+
         //Start Abfrage für Diamond Square Algorithmus
 
         //normaler Diamond Square, wenn Anzahl von Spalten und Zeilen gleich sind
-        //und diese eine 2er Potenz ist. Bsp: 2,4,8,16... bis 256
+        //und diese eine 2er Potenz ist. Bsp: 2,4,8,16... bis 128
         //Mehr Vertices kann Unity nicht berechnen/speichern
         if ((mRows == mCols) && ((mRows & (mRows - 1)) == 0))
         {
@@ -165,7 +170,7 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
                 //can be editable
                 mHeight *= 0.5f;
             }
-        } 
+        }
 
         // Anzahl Spalten und Zeilen ist gerade
         else if ((mRows % 2 == 0) && (mCols % 2 == 0))
@@ -173,10 +178,13 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
             //Bsp: mRows = 8 und mCols = 4 -> iteration = 3
             // Besonderheit doppelt so viele Rows wie Cols -> 2x normaler DiamondSquare
             int iterations = (int)Mathf.Log(mRows, 2);
-            int numSquares = 1;
+            int numSquares_y = 1;
+            int numSquares_x = 1;
             //Bsp: squareSize_y = 4
             int squareSize_y = mCols;
-            int squareSize_x = mRows;
+            float squareSize_x = (float)mRows;
+            int squareSize_x_edited = mRows;
+            int setrow = 0;
 
             //Schleife wie oft der DiamondSquare ausgeführt werden muss.
             for (int i = 0; i < iterations; i++)
@@ -184,60 +192,146 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
                 int row = 0;
 
                 //Schleife für das Wechseln der Zeilen.
-                for (int j = 0; j < numSquares; j++)
+                for (int j = 0; j < numSquares_x; j++)
                 {
                     int col = 0;
 
                     //Schleife für das Wechseln der Splaten.
-                    for (int k = 0; k < numSquares; k++)
+                    for (int k = 0; k < numSquares_y; k++)
                     {
-                        if (squareSize_y > squareSize_x)
+                        
+                        if (i == 0 || ((squareSize_x % 2 == 0) && (squareSize_y % 2) == 0))
                         {
-                            int temp = squareSize_x;
-                            squareSize_x = squareSize_y;
-                            squareSize_y = temp;
+                            squareSize_x_edited = (int)squareSize_x;
+                            setrow = squareSize_x_edited;
 
-                            //Anpassung der divisionSize
-                            float temp_2 = divisionSize.x;
-                            divisionSize.x = divisionSize.y;
-                            divisionSize.y = temp_2;
+                            DiamondSquareAlgo(row, col, squareSize_y, squareSize_x_edited, mHeight);
+                            Debug.Log(i + ". Schritt wurde ausgeführt");
 
-                            if (swapped == false)
+                        }
+                        else if (squareSize_y == 1)
+                        {
+                            int int_row = 1;
+                            int float_row = 1;
+
+                            //check squareSize is int or float
+                            if((squareSize_x % 1) == 0)
                             {
-                                swapped = true;
+                                int_row = (int)squareSize_x;
                             } else
                             {
-                                swapped = false;
+                                float_row = (int)(squareSize_x - 0.5f);
                             }
-                        }
-                        else if (i == 0 || squareSize_x == (squareSize_y * 2))
-                        {
-                            DiamondSquareAlgo(row, col, squareSize_y, squareSize_x, mHeight);
-                            Debug.Log("1. Schritt wurde ausgeführt");
 
-                        } else
+                            if ( ( j == 0 || ((j % 2) == 0)) )
+                            {
+                                squareSize_x_edited = (int)(squareSize_x - 0.5f);
+
+                                if ((squareSize_x % 1) != 0)
+                                {
+                                    setrow = (int)(squareSize_x + 0.5f);
+                                }
+                                else
+                                {
+                                    setrow = (int)squareSize_x;
+
+                                }
+                                Debug.Log("Schritte : " + j + "squareSize_x_edited (if) = " + squareSize_x_edited);
+                                Debug.Log("Schritte : " + j + "squareSize_x (if)= " + squareSize_x);
+                                Debug.Log("setrow (if) = " + setrow);
+
+                                if (((int_row % 2) == 0) || ((float_row % 2) == 0))
+                                {
+                                    Debug.Log("Ich beginne mit dem " + i + ". Schritt (Abbruch_row_gerade)");
+                                    DiamondSquareAlgo_Abbruch_row_gerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
+                                } else
+                                {
+                                    Debug.Log("Ich beginne mit dem " + i + ". Schritt (Abbruch_row_ungerade)");
+                                    DiamondSquareAlgo_Abbruch_row_ungerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
+                                }
+
+                            } else if ((j % 2) != 0)
+                            {
+                                squareSize_x_edited = (int)(squareSize_x - 0.5f);
+
+                                if ((squareSize_x % 1) != 0)
+                                {
+                                    setrow = (int)(squareSize_x - 0.5f);
+                                } else
+                                {
+                                    setrow = (int)squareSize_x;
+                                }
+
+                                Debug.Log("Schritte : " + j + "squareSize_x_edited (elseif) = " + squareSize_x_edited);
+                                Debug.Log("Schritte : " + j + "squareSize_x (elseif)= " + squareSize_x);
+                                Debug.Log("setrow (elseif) = " + setrow);
+
+                                if (((int_row % 2) == 0) || ((float_row % 2) == 0))
+                                {
+                                    Debug.Log("Ich beginne mit dem " + i + ". Schritt (Abbruch_row_gerade)");
+                                    DiamondSquareAlgo_Abbruch_row_gerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
+
+                                } else
+                                {
+                                    Debug.Log("Ich beginne mit dem " + i + ". Schritt (Abbruch_row_ungerade)");
+                                    DiamondSquareAlgo_Abbruch_row_ungerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
+                                }
+                            } 
+                            else
+                            {
+                                squareSize_x_edited = (int)squareSize_x;
+                                setrow = squareSize_x_edited;
+                            }        
+                        }
+                        else
                         {
-                            Debug.Log("Ich beginne mit dem 2.Schritt");
-                            DiamondSquareAlgo_ungerade_gerade(row, col, squareSize_y, squareSize_x, mHeight);
+                            
+                            squareSize_x_edited = (int)squareSize_x;
+                            setrow = squareSize_x_edited;
+
+                            if ( ((squareSize_y % 2) != 0) && ((squareSize_x_edited % 2) == 0))
+                            {                 
+                                Debug.Log("Ich beginne mit dem " + i + ". Schritt (u/g)");
+                                DiamondSquareAlgo_ungerade_gerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
+
+                            } else if (((squareSize_y % 2) != 0) && ((squareSize_x_edited % 2) != 0))
+                            {
+                                Debug.Log("Ich beginne mit dem " + i + ". Schritt (u/u)");
+                                DiamondSquareAlgo_ungerade_ungerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
+
+                            } else
+                            {
+                                Debug.Log("Ich beginne mit dem " + i + ". Schritt (g/u)");
+                                DiamondSquareAlgo_gerade_ungerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
+                            }
+                  
                         }
                         col += squareSize_y;
                     }
 
-                    row += squareSize_x;
+                    row += setrow;
+                    //Debug.Log("row = " + row);
                 }
 
-                numSquares *= 2;
-                squareSize_y /= 2;
+                numSquares_y *= 2;
+                numSquares_x *= 2;
 
-                if ((squareSize_x % 2) == 0)
+                if (((squareSize_y % 2) != 0) || squareSize_y == 2)
                 {
-                    squareSize_x += 1;
-                    squareSize_x /= 2;
-
-                } else
-                {
-                    squareSize_x /= 2;
+                    squareSize_y = 1;
+                    numSquares_y = mCols + 1;
                 }
+                else
+                {
+                    squareSize_y /= 2;
+                }
+
+                squareSize_x /= 2.0f;
+
+                //Debug.Log("squareSize_y = " + squareSize_y);
+                //Debug.Log("squareSize_x = " + squareSize_x);
+                //Debug.Log("numSquares_y = " + numSquares_y);
+                //Debug.Log("numSquares_x = " + numSquares_x);
 
                 //can be editable
                 mHeight *= 0.5f;
@@ -260,6 +354,7 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
 
     }
 
+    //worked 25.11.2020 (Bsp: 10 x 6 Matrix)
     void DiamondSquareAlgo(int row, int col, int size_y, int size_x, float offset)
     {
         int mDivisions = mRows;
@@ -271,134 +366,356 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
         //Diamond Step
         int halfSize_y = (int)(size_y * 0.5f);
         int halfSize_x = (int)(size_x * 0.5f);
-        if (swapped == false)
-        {
 
-            Debug.Log("size_y: " + size_y);
-            Debug.Log("row: " + row);
-            topLeft = ((row * (mRows + 1)) + col);
+        //Debug.Log("size_y: " + size_y);
+        //Debug.Log("row: " + row);
+        topLeft = ((row * (mRows + 1)) + col);
 
-            //need x_size here!
-            botLeft = (((row + size_x) * (mCols + 1)) + col);
-            topRight = topLeft + size_y;
-            botRight = botLeft + size_y;
-
-            Debug.Log("topLeft: " + topLeft);
-            Debug.Log("botLeft: " + botLeft);
-            Debug.Log("topRight: " + topRight);
-            Debug.Log("botRight: " + botRight);
-
-
-
-            int mid = (int)(row + halfSize_y) * (mRows + 1) + (int)(col + halfSize_x);
-            Debug.Log("mid: " + mid);
-            Debug.Log("topLeft[].y: " + mVerts[topLeft].y);
-            Debug.Log("topRight[].y: " + mVerts[topRight].y);
-            Debug.Log("botLeft[].y: " + mVerts[botLeft].y);
-            Debug.Log("botLeft[].y: " + mVerts[botRight].y);
-            mVerts[mid].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);        //performance boost 
-
-            //Square Step
-
-            //mVerts[oben]
-            Debug.Log("mVerts[oben]: " + (topLeft + halfSize_y));
-            mVerts[topLeft + halfSize_y].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-            //mVerts[links]
-            Debug.Log("mVerts[links]: " + (mid - halfSize_y));
-            mVerts[mid - halfSize_y].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-            //mVerts[rechts]
-            Debug.Log("mVerts[rechts]: " + (mid + halfSize_y));
-            mVerts[mid + halfSize_y].y = (mVerts[topLeft + size_y].y + mVerts[botLeft + size_y].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-            //mVerts[unten]
-            Debug.Log("mVerts[unten]: " + (botLeft + halfSize_y));
-            mVerts[botLeft + halfSize_y].y = (mVerts[botLeft].y + mVerts[botLeft + size_y].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-
-        } else
-        {
-            topLeft = mDivisions * size_y + size_y - ((mDivisions +1) * col);
-            botLeft = (mVertCount) - (row * (size_x - 1)) - ((mDivisions + 1) * col + 1);
-            topRight = topLeft - (size_y * (mDivisions + 1));
-            botRight = (topRight + mDivisions);
-
-            Debug.Log("topLeft_swapped: " + topLeft);
-            Debug.Log("botLeft_swapped: " + botLeft);
-            Debug.Log("topRight_swapped: " + topRight);
-            Debug.Log("botRight_swapped: " + botRight);
-
-            int mid = (topLeft - ((int)(halfSize_y) * (mDivisions + 1))) + (int)(halfSize_x - col);
-            Debug.Log("mid_swapped: " + mid);
-            mVerts[mid].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);        //performance boost 
-
-            //Square Step
-
-            //mVerts[links]
-            Debug.Log("mVerts[links]: " + (topLeft + (halfSize_y + 1)));
-            mVerts[topLeft + (halfSize_y + 1)].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-            //mVerts[oben]
-            Debug.Log("mVerts[oben]: " + (mid - (halfSize_y + 1)));
-            mVerts[mid - (halfSize_y + 1)].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-            //mVerts[unten]
-            Debug.Log("mVerts[unten]: " + (mid + (halfSize_y + 1)));
-            mVerts[mid + (halfSize_y + 1)].y = (mVerts[botLeft].y + mVerts[botRight].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-            //mVerts[rechts]
-            Debug.Log("mVerts[rechts]: " + (topRight + (halfSize_y + 1)));
-            mVerts[topRight + (halfSize_y + 1)].y = (mVerts[topRight].y + mVerts[botRight].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
-
-        }
-
-    }
-
-    void DiamondSquareAlgo_ungerade_gerade(int row, int col, int size_y, int size_x, float offset)
-    {
-        int mDivisions = mRows;
-        int size = size_y;
-        float half_divSize_x = (divisionSize.x * 0.5f);
-
-        Debug.Log("size: " + size);
-
-        //Diamond Step
-        int halfSize = (int)(size * 0.5f);
-        int topLeft = row * (size + 1) + col;
-        int botLeft = (row + mDivisions) * (size + 1) + col;
+        //need x_size here!
+        botLeft = (((row + size_x) * (mCols + 1)) + col);
+        topRight = topLeft + size_y;
+        botRight = botLeft + size_y;
 
         Debug.Log("topLeft: " + topLeft);
         Debug.Log("botLeft: " + botLeft);
+        Debug.Log("topRight: " + topRight);
+        Debug.Log("botRight: " + botRight);
 
-        float mid = (int)(row + halfSize) * (mDivisions + 1) + (int)(col + halfSize);
-        int mid_1 = (int)(mid - half_divSize_x);
-        int mid_2 = (int)(mid + half_divSize_x);
+        int mid = (int)(row + halfSize_y) * (mRows + 1) + (int)(col + halfSize_x);
+        Debug.Log("mid: " + mid);
+        //Debug.Log("topLeft[].y: " + mVerts[topLeft].y);
+        //Debug.Log("topRight[].y: " + mVerts[topRight].y);
+        //Debug.Log("botLeft[].y: " + mVerts[botLeft].y);
+        //Debug.Log("botLeft[].y: " + mVerts[botRight].y);
+        mVerts[mid].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);        //performance boost 
 
-        // Beide Mit Werte haben die gleichen vier Eckpunkte -> Fehler beim 3. Durchgang im 2.Schritt TODO
-        mVerts[mid_1].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[botLeft].y + mVerts[botLeft + size].y) * 0.25f + Random.Range(-offset, offset);
-        mVerts[mid_2].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[botLeft].y + mVerts[botLeft + size].y) * 0.25f + Random.Range(-offset, offset);
+        //Square Step
+
+        //mVerts[oben]
+        Debug.Log("mVerts[oben]: " + (topLeft + halfSize_y));
+        mVerts[topLeft + halfSize_y].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[links]
+        Debug.Log("mVerts[links]: " + (mid - halfSize_y));
+        mVerts[mid - halfSize_y].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[rechts]
+        Debug.Log("mVerts[rechts]: " + (mid + halfSize_y));
+        mVerts[mid + halfSize_y].y = (mVerts[topLeft + size_y].y + mVerts[botLeft + size_y].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[unten]
+        Debug.Log("mVerts[unten]: " + (botLeft + halfSize_y));
+        mVerts[botLeft + halfSize_y].y = (mVerts[botLeft].y + mVerts[botLeft + size_y].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset);
+    }
+
+    //worked 25.11.2020 (Bsp: 10 x 4 Matrix)
+    void DiamondSquareAlgo_gerade_ungerade(int row, int col, int size_y, int size_x, float offset)
+    {
+
+        //size_y ist gerade deshalb int
+        int halfSize_y = (int)(size_y * 0.5f);
+        //Debug.Log("halfSize_y = " + halfSize_y);
+
+        //size_x ist ungerade deshalb float
+        float halfSize_x = (float)((float)size_x * 0.5f);
+        //Debug.Log("halfSize_x = " + halfSize_x);
+
+        //Die halbe (mCols+1) Länge
+
+        float halfVertsCols = (float)(((float)mCols + 1.0f) * 0.5f);
+
+            //Änderung hier!!
+        int topLeft = row * (mCols + 1) + col;
+
+            //Same wie oben auch 
+        int botLeft = (((row + size_x) * (mCols + 1)) + col);
+        int topRight = topLeft + size_y;
+        int botRight = botLeft + size_y;
+
+        //Diamond Step mid_1 and mid_2 haben die gleichen 4 Eckpunkte!
+
+        float mid = ((float)(row * (mCols + 1)) + (float)(halfSize_y * (mRows + 1)) + (float)((float)col + halfSize_x));
+        Debug.Log("float mid = " + mid);
+
+        //Ab Hier relevant für swapped == true or false!
+        //halfVertsCols new feature !!!
+        int mid_1 = ((int)(mid - halfVertsCols));
+        Debug.Log("int mid_1 = " + mid_1);
+        mVerts[mid_1].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
+
+        int mid_2 = ((int)(mid + halfVertsCols));
+        Debug.Log("int mid_2 = " + mid_2);
+        mVerts[mid_2].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
 
         //Square Step mid_1
 
-        mVerts[topLeft + halfSize].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
-        mVerts[mid_1 - halfSize].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
-        mVerts[mid_1 + halfSize].y = (mVerts[topLeft + size].y + mVerts[botLeft + size].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
-        //mVerts[botLeft + halfSize].y = (mVerts[botLeft].y + mVerts[botLeft + size].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset); -> Dieser ist Mid_2
+        //mVerts[oben]
+        Debug.Log("mVerts[oben]: " + (topLeft + halfSize_y));
+        mVerts[topLeft + halfSize_y].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[links_1]
+        Debug.Log("mVerts[links_1]: " + (mid_1 - halfSize_y));
+        mVerts[mid_1 - halfSize_y].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[rechts_1]
+        Debug.Log("mVerts[rechts_1]: " + (mid_1 + halfSize_y));
+        mVerts[mid_1 + halfSize_y].y = (mVerts[topLeft + size_y].y + mVerts[botLeft + size_y].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
 
         //Square Step mid_2
 
-        //mVerts[topLeft + halfSize].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[mid].y) / 3 + Random.Range(-offset, offset); -> Dieser ist Mid_1
-        mVerts[mid_2 - halfSize].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
-        mVerts[mid_2 + halfSize].y = (mVerts[topLeft + size].y + mVerts[botLeft + size].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
-        mVerts[botLeft + halfSize].y = (mVerts[botLeft].y + mVerts[botLeft + size].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
+        //mVerts[links_2]
+        Debug.Log("mVerts[links_2]: " + (mid_2 - halfSize_y));
+        mVerts[mid_2 - halfSize_y].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
 
-        Debug.Log("Ich bin fertig mit dem 2. Schritt");
+        //mVerts[rechts_2]
+        Debug.Log("mVerts[rechts_2]: " + (mid_2 + halfSize_y));
+        mVerts[mid_2 + halfSize_y].y = (mVerts[topLeft + size_y].y + mVerts[botLeft + size_y].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[unten]
+        Debug.Log("mVerts[unten]: " + (botLeft + halfSize_y));
+        mVerts[botLeft + halfSize_y].y = (mVerts[botLeft].y + mVerts[botLeft + size_y].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
 
     }
 
-    void DiamondSquareAlgo_ungerade_ungerade(int row, int col, int size_x, int size_y, float offset)
+    //worked 25.11.2020 (Bsp: 12 x 6 and 14 x 6 Matrix)
+    void DiamondSquareAlgo_ungerade_gerade(int row, int col, int size_y, int size_x, float offset)
     {
 
+        //size_y ist gerade deshalb int
+        int halfSize_y = (int)(size_y * 0.5f);
+        //Debug.Log("halfSize_y = " + halfSize_y);
+
+        //size_x ist ungerade deshalb float
+        float halfSize_x = (float)((float)size_x * 0.5f);
+        //Debug.Log("halfSize_x = " + halfSize_x);
+
+        //Die halbe (mCols+1) Länge
+
+        float halfVertsCols = (float)(((float)mCols + 1.0f) * 0.5f);
+
+        //Änderung hier!!
+        int topLeft = row * (mCols + 1) + col;
+
+        //Same wie oben auch 
+        int botLeft = (((row + size_x) * (mCols + 1)) + col);
+        int topRight = topLeft + size_y;
+        int botRight = botLeft + size_y;
+
+        //Diamond Step mid_1 and mid_2 haben die gleichen 4 Eckpunkte!
+
+        float mid = ((float)(row * (mCols + 1)) + (float)((float)((float)size_y * 0.5f) * (mRows + 1)) + (float)((float)col + halfSize_x));
+        Debug.Log("float mid = " + mid);
+
+        //halfVertsCols new feature !!!
+        int mid_1 = ((int)(mid - 0.5f));
+        Debug.Log("int mid_1 = " + mid_1);
+        mVerts[mid_1].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
+
+        int mid_2 = ((int)(mid + 0.5f));
+        Debug.Log("int mid_2 = " + mid_2);
+        mVerts[mid_2].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
+
+        //Square Step mid_1
+
+        //mVerts[oben_1]
+        Debug.Log("mVerts[oben_1]: " + (topLeft + halfSize_y));
+        mVerts[topLeft + halfSize_y].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[links_1]
+        Debug.Log("mVerts[links_1]: " + (mid_1 - halfSize_y));
+        mVerts[mid_1 - halfSize_y].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[unten_1]
+        Debug.Log("mVerts[unten_1]: " + (botLeft + halfSize_y));
+        mVerts[botLeft + halfSize_y].y = (mVerts[botLeft].y + mVerts[botRight].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
+
+        //Square Step mid_2
+
+        //mVerts[oben_2]
+        Debug.Log("mVerts[links_2]: " + (topLeft + halfSize_y + 1));
+        mVerts[topLeft + halfSize_y + 1].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[rechts_2]
+        Debug.Log("mVerts[rechts_2]: " + (mid_2 + halfSize_y));
+        mVerts[mid_2 + halfSize_y].y = (mVerts[topRight].y + mVerts[botRight].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[unten]
+        Debug.Log("mVerts[unten_2]: " + (botLeft + halfSize_y + 1));
+        mVerts[botLeft + halfSize_y + 1].y = (mVerts[botLeft].y + mVerts[botRight].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
+
     }
+
+    //worked 25.11.2020 (Bsp: 10 x 6 Matrix)
+    void DiamondSquareAlgo_ungerade_ungerade(int row, int col, int size_y, int size_x, float offset)
+    {
+
+        //size_y ist gerade deshalb int
+        float halfSize_y = (float)((float)size_y * 0.5f);
+        //Debug.Log("halfSize_y = " + halfSize_y);
+
+        //size_x ist ungerade deshalb float
+        float halfSize_x = (float)((float)size_x * 0.5f);
+        //Debug.Log("halfSize_x = " + halfSize_x);
+
+        //Die halbe (mCols+1) Länge
+
+        float halfVertsCols = (float)(((float)mCols + 1.0f) * 0.5f);
+
+        //Änderung hier!!
+        int topLeft = row * (mCols + 1) + col;
+
+        //Same wie oben auch 
+        int botLeft = (((row + size_x) * (mCols + 1)) + col);
+        int topRight = topLeft + size_y;
+        int botRight = botLeft + size_y;
+
+        //Diamond Step mid_1 and mid_2 haben die gleichen 4 Eckpunkte!
+
+        float mid = ((float)(row * (mCols + 1)) + (float)((halfSize_y * (mRows + 1)) + (float)((float)col + halfSize_x)));
+        Debug.Log("float mid = " + mid);
+
+        //halfVertsCols new feature !!!
+        int mid_1 = ((int)(mid - halfVertsCols - 0.5f));
+        Debug.Log("int mid_1 = " + mid_1);
+        mVerts[mid_1].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
+
+        int mid_2 = ((int)(mid - halfVertsCols + 0.5f));
+        Debug.Log("int mid_2 = " + mid_2);
+        mVerts[mid_2].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
+
+        int mid_3 = ((int)(mid + halfVertsCols  - 0.5f));
+        Debug.Log("int mid_3 = " + mid_3);
+        mVerts[mid_3].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
+
+        int mid_4 = ((int)(mid + halfVertsCols  + 0.5f));
+        Debug.Log("int mid_4 = " + mid_4);
+        mVerts[mid_4].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[botLeft].y + mVerts[botRight].y) * 0.25f + Random.Range(-offset, offset);
+
+
+        //Square Step mid_1
+
+        //mVerts[oben_1]
+        Debug.Log("mVerts[oben_1]: " + (topLeft + (int)(halfSize_y - 0.5f)));
+        mVerts[topLeft + (int)(halfSize_y - 0.5f)].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[links_1]
+        Debug.Log("mVerts[links_1]: " + (mid_1 - (int)(halfSize_y - 0.5f)));
+        mVerts[mid_1 - (int)(halfSize_y - 0.5f)].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_1].y) / 3 + Random.Range(-offset, offset);
+
+        //Square Step mid_2
+
+        //mVerts[oben_2]
+        Debug.Log("mVerts[oben_2]: " + (topLeft + (int)(halfSize_y + 0.5f)));
+        mVerts[topLeft + (int)(halfSize_y + 0.5f)].y = (mVerts[topLeft].y + mVerts[topRight].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[rechts_1]
+        Debug.Log("mVerts[rechts_1]: " + (mid_2 + (int)(halfSize_y - 0.5f)));
+        mVerts[mid_2 + (int)(halfSize_y - 0.5f)].y = (mVerts[topRight].y + mVerts[botRight].y + mVerts[mid_2].y) / 3 + Random.Range(-offset, offset);
+
+        //Square Step mid_3
+
+        //mVerts[links_2]
+        Debug.Log("mVerts[links_2]: " + (mid_3 - (int)(halfSize_y - 0.5f)));
+        mVerts[mid_3 - (int)(halfSize_y - 0.5f)].y = (mVerts[topLeft].y + mVerts[botLeft].y + mVerts[mid_3].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[unten_1]
+        Debug.Log("mVerts[unten_1]: " + (botLeft + (int)(halfSize_y - 0.5f)));
+        mVerts[botLeft + (int)(halfSize_y - 0.5f)].y = (mVerts[botLeft].y + mVerts[botRight].y + mVerts[mid_3].y) / 3 + Random.Range(-offset, offset);
+
+        //Square Step mid_4
+
+        //mVerts[rechts_2]
+        Debug.Log("mVerts[rechts_2]: " + (mid_4 + (int)(halfSize_y - 0.5f)));
+        mVerts[mid_4 + (int)(halfSize_y - 0.5f)].y = (mVerts[topRight].y + mVerts[botRight].y + mVerts[mid_4].y) / 3 + Random.Range(-offset, offset);
+
+        //mVerts[unten_2]
+        Debug.Log("mVerts[unten_2]: " + (botLeft + (int)(halfSize_y + 0.5f)));
+        mVerts[botLeft + (int)(halfSize_y + 0.5f)].y = (mVerts[botLeft].y + mVerts[botRight].y + mVerts[mid_4].y) / 3 + Random.Range(-offset, offset);
+
+    }
+
+    //worked 25.11.2020 (Bsp: 10 x 6 Matrix)
+    void DiamondSquareAlgo_Abbruch_row_gerade(int row, int col, int size_y, int size_x, float offset)
+    {
+        int top_vert;
+        int bot_vert;
+
+        top_vert = row * (mCols + 1) + col;
+        bot_vert = (((row + size_x) * (mCols + 1)) + col);
+
+        Debug.Log("topVert = " + top_vert);
+        Debug.Log("botVert = " + bot_vert);
+
+        int mid = (int)((top_vert + bot_vert) * 0.5f);
+
+        Debug.Log("mid = " + mid);
+
+        mVerts[mid].y = (mVerts[top_vert].y + mVerts[bot_vert].y) *0.5f + Random.Range(-offset, offset);
+
+    }
+
+    void DiamondSquareAlgo_Abbruch_row_ungerade(int row, int col, int size_y, int size_x, float offset)
+    {
+        int top_vert;
+        int bot_vert;
+
+        top_vert = row * (mCols + 1) + col;
+        bot_vert = (top_vert + (3 * (mCols + 1)));
+
+        Debug.Log("topVert = " + top_vert);
+        Debug.Log("botVert = " + bot_vert);
+
+        int mid_1 = (top_vert + (mCols + 1));
+        int mid_2 = (bot_vert - (mCols + 1));
+
+        Debug.Log("mid_1 = " + mid_1);
+        Debug.Log("mid_2 = " + mid_2);
+
+        mVerts[mid_1].y = (mVerts[top_vert].y + mVerts[bot_vert].y) * 0.5f + Random.Range(-offset, offset);
+        mVerts[mid_2].y = (mVerts[top_vert].y + mVerts[bot_vert].y) * 0.5f + Random.Range(-offset, offset);
+
+    }
+
+    // TODO!!!!!!
+    void DiamondSquareAlgo_Abbruch_col_gerade(int row, int col, int size_y, int size_x, float offset)
+    {
+        int top_vert;
+        int bot_vert;
+
+        top_vert = row * (mCols + 1) + col;
+        bot_vert = (((row + size_x) * (mCols + 1)) + col);
+
+        Debug.Log("topVert = " + top_vert);
+        Debug.Log("botVert = " + bot_vert);
+
+        int mid = (int)((top_vert + bot_vert) * 0.5f);
+
+        Debug.Log("mid = " + mid);
+
+        mVerts[mid].y = (mVerts[top_vert].y + mVerts[bot_vert].y) * 0.5f + Random.Range(-offset, offset);
+
+    }
+
+    void DiamondSquareAlgo_Abbruch_col_ungerade(int row, int col, int size_y, int size_x, float offset)
+    {
+        int top_vert;
+        int bot_vert;
+
+        top_vert = row * (mCols + 1) + col;
+        bot_vert = (top_vert + (3 * (mCols + 1)));
+
+        Debug.Log("topVert = " + top_vert);
+        Debug.Log("botVert = " + bot_vert);
+
+        int mid_1 = (top_vert + (mCols + 1));
+        int mid_2 = (bot_vert - (mCols + 1));
+
+        Debug.Log("mid_1 = " + mid_1);
+        Debug.Log("mid_2 = " + mid_2);
+
+        mVerts[mid_1].y = (mVerts[top_vert].y + mVerts[bot_vert].y) * 0.5f + Random.Range(-offset, offset);
+        mVerts[mid_2].y = (mVerts[top_vert].y + mVerts[bot_vert].y) * 0.5f + Random.Range(-offset, offset);
+
+    }
+
 }
