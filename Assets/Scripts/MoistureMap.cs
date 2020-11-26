@@ -49,39 +49,39 @@ public class MoistureMap : MonoBehaviour
         {
             return new Color(0, 0, 139);
         }
-        if (perlin >= 0.1 && perlin < 0.2)
+        else if (perlin >= 0.1 && perlin < 0.2)
         {
             return new Color(0, 0, 205);
         }
-        if (perlin >= 0.2 && perlin < 0.3)
+        else if (perlin >= 0.2 && perlin < 0.3)
         {
             return new Color(0, 0, 238);
         }
-        if (perlin >= 0.3 && perlin < 0.4)
+        else if (perlin >= 0.3 && perlin < 0.4)
         {
             return new Color(0, 0, 255);
         }
-        if (perlin >= 0.4 && perlin < 0.5)
+        else if (perlin >= 0.4 && perlin < 0.5)
         {
             return new Color(30, 144, 255);
         }
-        if (perlin >= 0.5 && perlin < 0.6)
+        else if (perlin >= 0.5 && perlin < 0.6)
         {
             return new Color(255, 255, 224);
         }
-        if (perlin >= 0.6 && perlin < 0.7)
+        else if (perlin >= 0.6 && perlin < 0.7)
         {
             return new Color(0, 255, 0);
         }
-        if (perlin >= 0.7 && perlin < 0.8)
+        else if (perlin >= 0.7 && perlin < 0.8)
         {
             return new Color(0, 238, 0);
         }
-        if (perlin >= 0.8 && perlin < 0.9)
+        else if (perlin >= 0.8 && perlin < 0.9)
         {
             return new Color(0, 205, 0);
         }
-        if (perlin >= 0.9 && perlin <= 1.0)
+        else if (perlin >= 0.9 && perlin <= 1.0)
         {
             return new Color(0, 139, 0);
         }
