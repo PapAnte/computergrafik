@@ -327,8 +327,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5351ddcafff39ab449d0a7428af8d6c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 256
-  height: 256
+  width: 538
+  height: 538
   scale: 20
 --- !u!33 &1781788993
 MeshFilter:

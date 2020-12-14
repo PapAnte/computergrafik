@@ -1,22 +1,37 @@
 ﻿using UnityEngine;
+using System.IO;
 
 public class MoistureMap : MonoBehaviour
 {
-    public int width = 256;
-    public int height = 256;
-    public float scale = 20f;
+    // private attributes
+    private int width = 0;
+    private int height = 0;
+    private float scale = 20f;
+
+    // Pathlocations
+    string heightmapPath = ".//Assets//Scripts//image//heightmap.png";
+    string moisturemapPath = ".//Assets//Scripts//image//moisturemap.png";
 
     // Start is called before the first frame update
     void Start()
     {
+        GetHeightmap();
         Renderer renderer = GetComponent<Renderer>();
-        renderer.material.mainTexture = GenerateTexture();
+        renderer.material.mainTexture = GenerateMoisture();
     }
 
-    Texture2D GenerateTexture()
+    void GetHeightmap()
+    {
+        Texture2D heightmap = new Texture2D(1, 1);
+        byte[] tmpBytes = File.ReadAllBytes(this.heightmapPath);
+        heightmap.LoadImage(tmpBytes);
+        this.width = heightmap.width;
+        this.height = heightmap.height;
+    }
+
+    Texture2D GenerateMoisture()
     {
         Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
-
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -31,7 +46,7 @@ public class MoistureMap : MonoBehaviour
         GetComponent<Renderer>().material.mainTexture = texture;
 
         // generate image from Texture
-        string _fullpath = ".//Assets//Scripts//image//image.png";
+        string _fullpath = this.moisturemapPath;
         byte[] _bytes = texture.EncodeToPNG();
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
         Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
@@ -45,46 +60,6 @@ public class MoistureMap : MonoBehaviour
         float yCoord = (float)y / height * scale;
         
         float perlin = Mathf.PerlinNoise(xCoord, yCoord);
-        if (perlin >= 0 && perlin < 0.1)
-        {
-            return new Color(0, 0, 139);
-        }
-        else if (perlin >= 0.1 && perlin < 0.2)
-        {
-            return new Color(0, 0, 205);
-        }
-        else if (perlin >= 0.2 && perlin < 0.3)
-        {
-            return new Color(0, 0, 238);
-        }
-        else if (perlin >= 0.3 && perlin < 0.4)
-        {
-            return new Color(0, 0, 255);
-        }
-        else if (perlin >= 0.4 && perlin < 0.5)
-        {
-            return new Color(30, 144, 255);
-        }
-        else if (perlin >= 0.5 && perlin < 0.6)
-        {
-            return new Color(255, 255, 224);
-        }
-        else if (perlin >= 0.6 && perlin < 0.7)
-        {
-            return new Color(0, 255, 0);
-        }
-        else if (perlin >= 0.7 && perlin < 0.8)
-        {
-            return new Color(0, 238, 0);
-        }
-        else if (perlin >= 0.8 && perlin < 0.9)
-        {
-            return new Color(0, 205, 0);
-        }
-        else if (perlin >= 0.9 && perlin <= 1.0)
-        {
-            return new Color(0, 139, 0);
-        }
-        return new Color(139, 129, 076);
+        return new Color(perlin, perlin, perlin);
     }
 }
