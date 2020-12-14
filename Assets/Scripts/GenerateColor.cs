@@ -7,6 +7,8 @@ public class GenerateColor : MonoBehaviour
     private float[,] heightMap;
     private float[,] moistureMap;
     private float[,] colorMap;
+    private int width;
+    private int height;
 
     // Pathlocations
     string heightmapPath = ".//Assets//Scripts//image//heightmap.png";
@@ -18,7 +20,8 @@ public class GenerateColor : MonoBehaviour
     {
         GetArrayMoistureMap();
         GetArrayHeightMap();
-        //TODO
+        Renderer renderer = GetComponent<Renderer>();
+        renderer.material.mainTexture = CalculateColor();
     }
 
     void GetArrayMoistureMap()
@@ -42,6 +45,8 @@ public class GenerateColor : MonoBehaviour
         Texture2D heightmap = new Texture2D(1, 1);
         byte[] tmpBytes = File.ReadAllBytes(this.heightmapPath);
         heightmap.LoadImage(tmpBytes);
+        this.width = heightmap.width;
+        this.height = heightmap.height;
         heightMap = new float[heightmap.width, heightmap.height];
         for (int x = 0; x < heightmap.width; x++)
         {
@@ -51,5 +56,31 @@ public class GenerateColor : MonoBehaviour
                 heightMap[x, y] = color.r;
             }
         }
+    }
+
+    Texture2D CalculateColor()
+    {
+        Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+        Texture2D colormap = new Texture2D(1, 1);
+        byte[] tmpBytes = File.ReadAllBytes(this.colorPath);
+        colormap.LoadImage(tmpBytes);
+
+        for (int i = 0; i < this.width; i++)
+        {
+            for (int j = 0; j < this.height; j++)
+            {
+                float x = moistureMap[i, j];
+                float y = heightMap[i, j];
+
+                x = (((1 - x) * 100) * colormap.width) / 100;
+                y = (((1 - y) * 100) * colormap.height) / 100;
+
+                Color color = colormap.GetPixel((int)x, (int)y);
+                texture.SetPixel(i, j, color);
+            }
+        }
+
+        texture.Apply();
+        return texture;
     }
 }
