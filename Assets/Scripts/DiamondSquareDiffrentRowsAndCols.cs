@@ -34,8 +34,8 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
         mCols_original = mCols;
 
         // Debug für ungültigen Wert 0 und > 128 Zeilen/Spalten
-        // edit this: || mRows != mCols || ((mRows & (mRows - 1)) != 0)
-        if (mRows == 0 || mCols == 0 || mRows > 128 || mCols > 128 )
+        // edit this: || mRows != mCols || ((mRows & (mRows - 1)) != 0) || mRows > 128 || mCols > 128
+        if (mRows == 0 || mCols == 0 )
         {
             Debug.Log("ungültiger Zeilen/Spalten Wert");
 
@@ -56,7 +56,51 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
 
             CreateTerrain();
         }
+
+        CreateTexture();
     }
+
+    void CreateTexture()
+    {
+
+        // Create a new texture ARGB32 (32 bit with alpha) and no mipmaps
+        var texture = new Texture2D(mRows_original, mCols_original, TextureFormat.ARGB32, false);
+
+        //Diese Variable hilft dabei, zu wissen bei welchem Vertice der Matrix wir uns gerade befinden
+        int countVertices = 0;
+
+        Color color;
+        // pixel farben setzen für jeden Vertice in einer Spalte; das ganze wird Reihe für Reihe durchlaufen
+        for (int i = 0; i <= mRows_original; i++)
+        {
+            for (int j = 0; j <= mCols_original; j++)
+            {
+                //Der Höhenwert soll sich zwischen 0 und 1 bewegen, das heißt eine 1 ist der höchste Punkt und damit weiß
+                //weiß ist im RGB code (255, 255, 255) und schwarz (0, 0, 0); damit kann ich jede Höhe, welche in 
+                //y gespeichert ist, mit 255 multiplizieren und erhalte somit eine Grauabstufung von schwarz nach weiß
+                // texture.SetPixel(0, 0, Color(1.0, 1.0, 1.0, 0.5));
+                color = new Color32((byte)(mVerts[countVertices].y * 255), (byte)(mVerts[countVertices].y * 255), (byte)(mVerts[countVertices].y * 255), 255);
+                texture.SetPixel(i, j, color);
+                Debug.Log("Check for: " + i + " " + j + " " + color);
+                countVertices++;
+            }
+        }
+
+        //definierte Pixel anwenden
+        texture.Apply();
+
+        // connect texture to material of GameObject this script is attached to
+        GetComponent<Renderer>().material.mainTexture = texture;
+        //GetComponent<Renderer>().material.SetTexture("_NewTexture", texture);
+
+        // ------------------------------------------------------------------------------------------
+        string _fullpath = "Assets//Scripts//image//image.png";
+        byte[] _bytes = texture.EncodeToPNG();
+        System.IO.File.WriteAllBytes(_fullpath, _bytes);
+        Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
+        // ------------------------------------------------------------------------------------------ /
+    }
+
 
     void CreateTerrain()
     {
@@ -70,39 +114,39 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
 
         float halfSize = mSize * 0.5f;
 
-        Mesh mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
+        //Mesh mesh = new Mesh();
+        //GetComponent<MeshFilter>().mesh = mesh;
 
-        int triOffset = 0;
+        //int triOffset = 0;
 
-        for (int i = 0; i <= mRows_original; i++)
-        {
+        //for (int i = 0; i <= mRows_original; i++)
+        //{
 
-            for (int j = 0; j <= mCols_original; j++)
-            {
+        //    for (int j = 0; j <= mCols_original; j++)
+        //    {
 
-                mVerts[i * (mCols_original + 1) + j] = new Vector3(-halfSize + j * divisionSize.y, 0.0f, halfSize - i * divisionSize.x);
-                uvs[i * (mCols_original + 1) + j] = new Vector2((float)i / mRows_original, (float)j / mCols_original);
+        //        mVerts[i * (mCols_original + 1) + j] = new Vector3(-halfSize + j * divisionSize.y, 0.0f, halfSize - i * divisionSize.x);
+        //        uvs[i * (mCols_original + 1) + j] = new Vector2((float)i / mRows_original, (float)j / mCols_original);
 
-                //build up triangles
-                if (i < mRows_original && j < mCols_original)
-                {
-                    int topLeft = i * (mCols_original + 1) + j;
-                    int botLeft = (i + 1) * (mCols_original + 1) + j;
+        //        //build up triangles
+        //        if (i < mRows_original && j < mCols_original)
+        //        {
+        //            int topLeft = i * (mCols_original + 1) + j;
+        //            int botLeft = (i + 1) * (mCols_original + 1) + j;
 
-                    tris[triOffset] = topLeft;
-                    tris[triOffset + 1] = topLeft + 1;
-                    tris[triOffset + 2] = botLeft + 1;
+        //            tris[triOffset] = topLeft;
+        //            tris[triOffset + 1] = topLeft + 1;
+        //            tris[triOffset + 2] = botLeft + 1;
 
-                    tris[triOffset + 3] = topLeft;
-                    tris[triOffset + 4] = botLeft + 1;
-                    tris[triOffset + 5] = botLeft;
+        //            tris[triOffset + 3] = topLeft;
+        //            tris[triOffset + 4] = botLeft + 1;
+        //            tris[triOffset + 5] = botLeft;
 
-                    //0,6,12,18... Immer 2 neue Dreiecke pro Viereck
-                    triOffset += 6;
-                }
-            }
-        }
+        //            //0,6,12,18... Immer 2 neue Dreiecke pro Viereck
+        //            triOffset += 6;
+        //        }
+        //    }
+        //}
 
         //Debug.Log("mCols_original =" + mCols_original);
         //Debug.Log("mRows_original =" + mRows_original);
@@ -142,12 +186,12 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
             {
                 int row = 0;
 
-                //Schleife für das Wechseln der Zeilen.
+                //Schleife für das Iterrieren der Zeilen.
                 for (int j = 0; j < numSquares; j++)
                 {
                     int col = 0;
 
-                    //Schleife für das Wechseln der Splaten.
+                    //Schleife für das Iterrieren der Splaten.
                     for (int k = 0; k < numSquares; k++)
                     {
                         // Bsp: 2. Durchgang bei mDivision = 4
@@ -172,8 +216,9 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
             }
         }
 
-        // Anzahl Spalten und Zeilen ist gerade
-        else if ((mRows % 2 == 0) && (mCols % 2 == 0))
+        // Anzahl Spalten und Zeilen ist beliebig
+        //else if ((mRows % 2 == 0) && (mCols % 2 == 0))
+        else
         {
             //Bsp: mRows = 8 und mCols = 4 -> iteration = 3
             // Besonderheit doppelt so viele Rows wie Cols -> 2x normaler DiamondSquare
@@ -199,16 +244,20 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
                     //Schleife für das Wechseln der Splaten.
                     for (int k = 0; k < numSquares_y; k++)
                     {
-                        
-                        if (i == 0 || ((squareSize_x % 2 == 0) && (squareSize_y % 2) == 0))
+
+                        squareSize_x_edited = (int)squareSize_x;
+
+
+                        //Zeilen/Spalten beide gerade
+                        if (((squareSize_x_edited % 2 == 0) && (squareSize_y % 2) == 0))
                         {
-                            squareSize_x_edited = (int)squareSize_x;
                             setrow = squareSize_x_edited;
 
                             DiamondSquareAlgo(row, col, squareSize_y, squareSize_x_edited, mHeight);
                             Debug.Log(i + ". Schritt wurde ausgeführt");
 
                         }
+                        //Abbruch wenn col = 1
                         else if (squareSize_y == 1)
                         {
                             int int_row = 1;
@@ -279,27 +328,30 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
                             } 
                             else
                             {
-                                squareSize_x_edited = (int)squareSize_x;
                                 setrow = squareSize_x_edited;
                             }        
                         }
                         else
                         {
                             
-                            squareSize_x_edited = (int)squareSize_x;
                             setrow = squareSize_x_edited;
 
+                            //Spalten ungerade, Zeilen gerade
                             if ( ((squareSize_y % 2) != 0) && ((squareSize_x_edited % 2) == 0))
                             {                 
                                 Debug.Log("Ich beginne mit dem " + i + ". Schritt (u/g)");
                                 DiamondSquareAlgo_ungerade_gerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
 
-                            } else if (((squareSize_y % 2) != 0) && ((squareSize_x_edited % 2) != 0))
+                            } 
+                            //Spalten ungerade, Zeilen ungerade
+                            else if (((squareSize_y % 2) != 0) && ((squareSize_x_edited % 2) != 0))
                             {
                                 Debug.Log("Ich beginne mit dem " + i + ". Schritt (u/u)");
                                 DiamondSquareAlgo_ungerade_ungerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
 
-                            } else
+                            } 
+                            //Spalten gerade, Zeilen ungerade
+                            else
                             {
                                 Debug.Log("Ich beginne mit dem " + i + ". Schritt (g/u)");
                                 DiamondSquareAlgo_gerade_ungerade(row, col, squareSize_y, squareSize_x_edited, mHeight);
@@ -338,19 +390,13 @@ public class DiamondSquareDiffrentRowsAndCols : MonoBehaviour
             }
         }
 
-        // Debug else, falls keine der Bedingungen eintritt
-        else
-        {
-            Debug.Log("Ungültiger Zeilen und/oder Spaltenwert");
-        }
-
         // mesh Kalkulierung -> wird am Ende aller Schleifen ausgeführt
-        mesh.vertices = mVerts;
-        mesh.uv = uvs;
-        mesh.triangles = tris;
+        //mesh.vertices = mVerts;
+        //mesh.uv = uvs;
+        //mesh.triangles = tris;
 
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
+        //mesh.RecalculateBounds();
+        //mesh.RecalculateNormals();
 
     }
 
