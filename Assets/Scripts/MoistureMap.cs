@@ -42,8 +42,6 @@ public class MoistureMap : MonoBehaviour
         }
 
         texture.Apply();
-        GetComponent<Renderer>().material.shader = Shader.Find("Diffuse");
-        GetComponent<Renderer>().material.mainTexture = texture;
 
         // generate image from Texture
         string _fullpath = this.moisturemapPath;
