@@ -13,7 +13,8 @@ public class GenerateColor : MonoBehaviour
     // Pathlocations
     string heightmapPath = ".//Assets//Scripts//image//heightmap.png";
     string moisturemapPath = ".//Assets//Scripts//image//moisturemap.png";
-    string colorPath = ".//Assets//Scripts//image//colormap.png";
+    string colorLandPath = ".//Assets//Scripts//image//colormap_land.png";
+    string colorWaterPath = ".//Assets//Scripts//image//colormap_water.png";
 
     // Start is called before the first frame update
     void Start()
@@ -61,9 +62,13 @@ public class GenerateColor : MonoBehaviour
     Texture2D CalculateColor()
     {
         Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
-        Texture2D colormap = new Texture2D(1, 1);
-        byte[] tmpBytes = File.ReadAllBytes(this.colorPath);
-        colormap.LoadImage(tmpBytes);
+        Texture2D colormap_land = new Texture2D(1, 1);
+        byte[] tmpBytes = File.ReadAllBytes(this.colorLandPath);
+        colormap_land.LoadImage(tmpBytes);
+
+        Texture2D colormap_water = new Texture2D(1, 1);
+        tmpBytes = File.ReadAllBytes(this.colorWaterPath);
+        colormap_water.LoadImage(tmpBytes);
 
         for (int i = 0; i < this.width; i++)
         {
@@ -72,11 +77,20 @@ public class GenerateColor : MonoBehaviour
                 float x = moistureMap[i, j];
                 float y = heightMap[i, j];
 
-                x = (((1 - x) * 100) * colormap.width) / 100;
-                y = (((1 - y) * 100) * colormap.height) / 100;
-
-                Color color = colormap.GetPixel((int)x, (int)y);
-                texture.SetPixel(i, j, color);
+                if (y <= 0.6)
+                {
+                    x = (((1 - x) * 100) * colormap_land.width) / 100;
+                    y = ((((float)0.6 - (y - (float)0.4)) * 100) * colormap_land.height) / 100;
+                    Color color = colormap_land.GetPixel((int)x, (int)y);
+                    texture.SetPixel(i, j, color);
+                }
+                else
+                {
+                    x = (((1 - x) * 100) * colormap_water.width) / 100;
+                    y = ((((float)0.4 - y) * 100) * colormap_water.height) / 100;
+                    Color color = colormap_water.GetPixel((int)x, (int)y);
+                    texture.SetPixel(i, j, color);
+                }
             }
         }
 
