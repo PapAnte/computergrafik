@@ -41,7 +41,7 @@ public class GenerateColor : MonoBehaviour
     // Pathlocations
     string heightmapPath = ".//Assets//Scripts//image//heightmap.png";
     string moisturemapPath = ".//Assets//Scripts//image//moisturemap.png";
-    string colorLandPath = ".//Assets//Scripts//image//colormap_land.png";
+    string colorLandPath = ".//Assets//Scripts//image//colormap_land_1.png";
     string colorWaterPath = ".//Assets//Scripts//image//colormap_water.png";
 
     // Start is called before the first frame update
@@ -99,8 +99,14 @@ public class GenerateColor : MonoBehaviour
         {
             check = GetArrayMoistureMap();
         } while (check != true);
-        Renderer renderer = GetComponent<Renderer>();
-        renderer.material.mainTexture = CalculateColor();
+        //CalculateHeights();
+        CalculateColor();
+    }
+
+    void Update()
+    {
+        //Renderer renderer = GetComponent<Renderer>();
+        //renderer.material.mainTexture = CalculateColor();
     }
 
     void calculate_biggest_Quad()
@@ -277,7 +283,7 @@ public class GenerateColor : MonoBehaviour
             }
         }
 
-        //definierte Pixel anwenden
+        // definierte Pixel anwenden
         texture.Apply();
 
         // connect texture to material of GameObject this script is attached to
@@ -330,7 +336,7 @@ public class GenerateColor : MonoBehaviour
                 texture.SetPixel(x, y, color);
             }
         }
-
+        // Apply the changes to the texture and upload the updated texture to the GPU
         texture.Apply();
 
         // generate image from Texture
@@ -376,7 +382,12 @@ public class GenerateColor : MonoBehaviour
         return true;
     }
 
-    Texture2D CalculateColor()
+    void CalculateHeights()
+    {
+        
+    }
+
+    void CalculateColor()
     {
         Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
         Texture2D colormap_land = new Texture2D(1, 1);
@@ -391,27 +402,29 @@ public class GenerateColor : MonoBehaviour
         {
             for (int j = 0; j < this.height; j++)
             {
-                float x = moistureMap[i, j];
-                float y = heightMap[i, j];
+                float x = 1 - moistureMap[i, j];
+                float y = 1 - heightMap[i, j];
+                //float liquidThresholdScale = 0.6f;
+                //float liquidThreshold =  1 - liquidThresholdScale;
 
-                if (y <= 0.6)
+                if (y >= 0.4)
                 {
-                    x = (((1 - x) * 100) * colormap_land.width) / 100;
-                    y = ((((float)0.6 - (y - (float)0.4)) * 100) * colormap_land.height) / 100;
+                    x = (((x * 100) * colormap_land.width) / 100);
+                    y = ((((100 * (y-(float)0.4)) / (float)0.6) * colormap_land.height) / 100);
                     Color color = colormap_land.GetPixel((int)x, (int)y);
                     texture.SetPixel(i, j, color);
                 }
                 else
                 {
-                    x = (((1 - x) * 100) * colormap_water.width) / 100;
-                    y = ((((float)0.4 - y) * 100) * colormap_water.height) / 100;
+                    x = (((x * 100) * colormap_water.width) / 100);
+                    y = (((y * 100) * colormap_water.height) / 100);
                     Color color = colormap_water.GetPixel((int)x, (int)y);
                     texture.SetPixel(i, j, color);
                 }
             }
         }
-
+        // Apply the changes to the texture and upload the updated texture to the GPU
         texture.Apply();
-        return texture;
+        GetComponent<MeshRenderer>().material.mainTexture = texture;
     }
 }
