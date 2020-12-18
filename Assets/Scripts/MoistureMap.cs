@@ -13,11 +13,10 @@ public class MoistureMap : MonoBehaviour
     string moisturemapPath = ".//Assets//Scripts//image//moisturemap.png";
 
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         GetHeightmap();
-        Renderer renderer = GetComponent<Renderer>();
-        renderer.material.mainTexture = GenerateMoisture();
+        GenerateMoisture();
     }
 
     void GetHeightmap()
@@ -36,7 +35,7 @@ public class MoistureMap : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                Color color = CalculateColor(x, y);
+                Color color = CalculateColorMoisture(x, y);
                 texture.SetPixel(x, y, color);
             }
         }
@@ -52,7 +51,7 @@ public class MoistureMap : MonoBehaviour
         return texture;
     }
 
-    Color CalculateColor (int x, int y)
+    Color CalculateColorMoisture (int x, int y)
     {
         float xCoord = (float)x / width * scale;
         float yCoord = (float)y / height * scale;

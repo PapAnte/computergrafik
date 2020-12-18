@@ -9,6 +9,7 @@ public class GenerateColor : MonoBehaviour
     private float[,] colorMap;
     private int width;
     private int height;
+    private float scale = 20f;
 
     // Pathlocations
     string heightmapPath = ".//Assets//Scripts//image//heightmap.png";
@@ -19,44 +20,102 @@ public class GenerateColor : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GetArrayMoistureMap();
-        GetArrayHeightMap();
+        bool check = true;
+        do
+        {
+            check = GetArrayHeightMap();
+        } while (check != true);
+        GenerateMoisture();
+        do
+        {
+            check = GetArrayMoistureMap();
+        } while (check != true);
         Renderer renderer = GetComponent<Renderer>();
         renderer.material.mainTexture = CalculateColor();
     }
 
-    void GetArrayMoistureMap()
-    {
-        Texture2D moisturemap = new Texture2D(1, 1);
-        byte[] tmpBytes = File.ReadAllBytes(this.moisturemapPath);
-        moisturemap.LoadImage(tmpBytes);
-        moistureMap = new float[moisturemap.width, moisturemap.height];
-        for (int x = 0; x < moisturemap.width; x++)
-        {
-            for (int y = 0; y < moisturemap.height; y++)
-            {
-                Color color = moisturemap.GetPixel(x, y);
-                moistureMap[x, y] = color.r;
-            }
-        }
-    }
-
-    void GetArrayHeightMap()
+    bool GetArrayHeightMap()
     {
         Texture2D heightmap = new Texture2D(1, 1);
-        byte[] tmpBytes = File.ReadAllBytes(this.heightmapPath);
-        heightmap.LoadImage(tmpBytes);
-        this.width = heightmap.width;
-        this.height = heightmap.height;
-        heightMap = new float[heightmap.width, heightmap.height];
-        for (int x = 0; x < heightmap.width; x++)
+        try
         {
-            for (int y = 0; y < heightmap.height; y++)
+            byte[] tmpBytes = File.ReadAllBytes(this.heightmapPath);
+            heightmap.LoadImage(tmpBytes);
+            this.width = heightmap.width;
+            this.height = heightmap.height;
+            heightMap = new float[heightmap.width, heightmap.height];
+            for (int x = 0; x < heightmap.width; x++)
             {
-                Color color = heightmap.GetPixel(x, y);
-                heightMap[x, y] = color.r;
+                for (int y = 0; y < heightmap.height; y++)
+                {
+                    Color color = heightmap.GetPixel(x, y);
+                    heightMap[x, y] = color.r;
+                }
             }
         }
+        catch (FileNotFoundException)
+        {
+            Debug.Log("File HeightMapMap.png not found!");
+            return false;
+        }
+        return true;
+    }
+
+    Texture2D GenerateMoisture()
+    {
+        Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Color color = CalculateColorMoisture(x, y);
+                texture.SetPixel(x, y, color);
+            }
+        }
+
+        texture.Apply();
+
+        // generate image from Texture
+        string _fullpath = this.moisturemapPath;
+        byte[] _bytes = texture.EncodeToPNG();
+        System.IO.File.WriteAllBytes(_fullpath, _bytes);
+        Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
+
+        return texture;
+    }
+
+    Color CalculateColorMoisture(int x, int y)
+    {
+        float xCoord = (float)x / width * scale;
+        float yCoord = (float)y / height * scale;
+
+        float perlin = Mathf.PerlinNoise(xCoord, yCoord);
+        return new Color(perlin, perlin, perlin);
+    }
+
+    bool GetArrayMoistureMap()
+    {
+        Texture2D moisturemap = new Texture2D(1, 1);
+        try
+        {
+            byte[] tmpBytes = File.ReadAllBytes(this.moisturemapPath);
+            moisturemap.LoadImage(tmpBytes);
+            moistureMap = new float[moisturemap.width, moisturemap.height];
+            for (int x = 0; x < moisturemap.width; x++)
+            {
+                for (int y = 0; y < moisturemap.height; y++)
+                {
+                    Color color = moisturemap.GetPixel(x, y);
+                    moistureMap[x, y] = color.r;
+                }
+            }
+        }
+        catch (FileNotFoundException)
+        {
+            Debug.Log("File MoistureMap.png not found!");
+            return false;
+        }
+        return true;
     }
 
     Texture2D CalculateColor()
