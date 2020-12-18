@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TestMaterial
+  m_Name: Displace
   m_Shader: {fileID: 4800000, guid: 55154e64b078dce4b86b56d99f9f3b62, type: 3}
   m_ShaderKeywords: _PARALLAXMAP
   m_LightmapFlags: 4

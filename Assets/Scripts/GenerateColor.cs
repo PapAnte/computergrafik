@@ -21,7 +21,7 @@ public class GenerateColor : MonoBehaviour
     //bool swapped = false;
 
     //Höhengrenze
-    int UPPER_BOUND = 1;
+    public int UPPER_BOUND = 1;
 
     //Eckpunkte des Quadrats mit Höheninformation
     float topLeft;
@@ -30,7 +30,7 @@ public class GenerateColor : MonoBehaviour
     float botRight;
     float mid;
 
-    // private attributes
+    //
     private float[,] heightMap;
     private float[,] moistureMap;
     private float[,] colorMap;
