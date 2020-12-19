@@ -87,20 +87,22 @@ public class GenerateColor : MonoBehaviour
         mPixel[(y_Component - 1), (x_Component - 1)] = Random.Range(-UPPER_BOUND, UPPER_BOUND);
 
         calculate_biggest_Quad();
-        CreateTexture();
+
+        Renderer rendererheight = GetComponent<Renderer>();
+        rendererheight.material.SetTexture("_HeightMap", CreateTexture());
 
         bool check = true;
         do
         {
             check = GetArrayHeightMap();
         } while (check != true);
-        GenerateMoisture();
+        Renderer renderermoisture = GetComponent<Renderer>();
+        renderermoisture.material.SetTexture("_MoistureMap", GenerateMoisture());
         do
         {
             check = GetArrayMoistureMap();
         } while (check != true);
-        //CalculateHeights();
-        CalculateColor();
+        //CalculateColor();
     }
 
     void Update()
@@ -251,7 +253,7 @@ public class GenerateColor : MonoBehaviour
         return new float[2] { min, max };
     }
 
-    void CreateTexture()
+    Texture2D CreateTexture()
     {
 
         // Create a new texture ARGB32 (32 bit with alpha) and no mipmaps
@@ -296,8 +298,10 @@ public class GenerateColor : MonoBehaviour
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
         Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
         // ------------------------------------------------------------------------------------------ /
+        return texture;   
     }
 
+    // 
     bool GetArrayHeightMap()
     {
         Texture2D heightmap = new Texture2D(1, 1);
@@ -325,6 +329,7 @@ public class GenerateColor : MonoBehaviour
         return true;
     }
 
+    // 
     Texture2D GenerateMoisture()
     {
         Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
@@ -348,6 +353,7 @@ public class GenerateColor : MonoBehaviour
         return texture;
     }
 
+    // 
     Color CalculateColorMoisture(int x, int y)
     {
         float xCoord = (float)x / width * scale;
@@ -357,6 +363,7 @@ public class GenerateColor : MonoBehaviour
         return new Color(perlin, perlin, perlin);
     }
 
+    // 
     bool GetArrayMoistureMap()
     {
         Texture2D moisturemap = new Texture2D(1, 1);
@@ -382,11 +389,7 @@ public class GenerateColor : MonoBehaviour
         return true;
     }
 
-    void CalculateHeights()
-    {
-        
-    }
-
+    // 
     void CalculateColor()
     {
         Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
@@ -404,8 +407,6 @@ public class GenerateColor : MonoBehaviour
             {
                 float x = 1 - moistureMap[i, j];
                 float y = 1 - heightMap[i, j];
-                //float liquidThresholdScale = 0.6f;
-                //float liquidThreshold =  1 - liquidThresholdScale;
 
                 if (y >= 0.4)
                 {
@@ -425,6 +426,7 @@ public class GenerateColor : MonoBehaviour
         }
         // Apply the changes to the texture and upload the updated texture to the GPU
         texture.Apply();
+        Renderer renderer = GetComponent<Renderer>();
         GetComponent<MeshRenderer>().material.mainTexture = texture;
     }
 }

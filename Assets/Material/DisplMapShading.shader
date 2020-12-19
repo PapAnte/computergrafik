@@ -2,9 +2,10 @@
 {
 	Properties
 	{
-		_MainTex("Texture", 2D) = "white" {}
 		_DisplacementExtension("Terrain Scale", Range(0, 1)) = 0.01
 		_LiquidStartingPoint("Liquid threshold", Range(0, 1)) = 0
+		_HeightMap("Height Map", 2D) = "black" {}
+		_MoistureMap("Moisture Map", 2D) = "black" {}
 	}
 	SubShader
 	{
@@ -17,8 +18,8 @@
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
+			sampler2D _HeightMap;
+			float4 _HeightMap_ST;
 			float _DisplacementExtension;
 			float _LiquidStartingPoint;
 
@@ -36,7 +37,7 @@
 				v2f o;
 
 				// Farben aus der Textur extrahieren --> Aus Übung 3.3 #Es gibt keine Tutorials dafür...
-				fixed4 texVal = tex2Dlod(_MainTex, float4(v.texcoord.xy, 0, 0));
+				fixed4 texVal = tex2Dlod(_HeightMap, float4(v.texcoord.xy, 0, 0));
 
 				if (texVal.y < _LiquidStartingPoint) {
 					v.vertex.xyz += v.normal * _LiquidStartingPoint * _DisplacementExtension;
