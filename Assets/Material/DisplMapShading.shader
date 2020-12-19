@@ -4,8 +4,9 @@
 	{
 		_DisplacementExtension("Terrain Scale", Range(0, 1)) = 0.01
 		_LiquidStartingPoint("Liquid threshold", Range(0, 1)) = 0
-		_HeightMap("Height Map", 2D) = "black" {}
-		_MoistureMap("Moisture Map", 2D) = "black" {}
+		_HeightMap("Height Map", 2D) = "normal" {}
+		_MoistureMap("Moisture Map", 2D) = "normal" {}
+		_ColorMap("Color Map", 2D) = "normal" {}
 	}
 	SubShader
 	{
