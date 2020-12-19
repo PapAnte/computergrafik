@@ -12,6 +12,8 @@
 		_HeightMap("Height Map", 2D) = "normal" {}
 		_MoistureMap("Moisture Map", 2D) = "normal" {}
 		_ColorMap("Color Map", 2D) = "normal" {}
+
+		_Water("Water", Color) = (0.02723388,0.1524978,0.6415094,1)
 	}
 	SubShader
 	{
@@ -25,6 +27,9 @@
 			#include "UnityCG.cginc"
 
 			sampler2D _HeightMap;
+			sampler2D _MoistureMap;
+			sampler2D _ColorMap;
+			float4 _Water;
 			float4 _HeightMap_ST;
 			float _DisplacementExtension;
 			float _LiquidStartingPoint;
@@ -44,6 +49,7 @@
 
 				// Farben aus der Textur extrahieren --> Aus Übung 3.3 #Es gibt keine Tutorials dafür
 				fixed4 texVal = tex2Dlod(_HeightMap, float4(v.texcoord.xy, 0, 0));
+				fixed4 texValMoisture = tex2Dlod(_MoistureMap, float4(v.texcoord.xy, 0, 0));
 
 				// Da die Heightmap nur Werte zwischen 0 und 1 besitzt, kann hier darauf geprüft werden, ob der "Höhenwert" eines Pixels unterhalb unserer Flüssigkeitsschwelle liegt
 				if (texVal.y <= _LiquidStartingPoint) {
@@ -51,19 +57,21 @@
 					// Hier wird das Displacement angewandt, je Höher der "Höhenwert" des Pixels ist, desto häher erscheint der vertex auf dem Objekt, 
 					// alle Pixel die unter oder auf dem Schwellenwert liegen, erhalten denselben Wert
 					v.vertex.xyz += v.normal * _LiquidStartingPoint * _DisplacementExtension;
+					o.vertex = UnityObjectToClipPos(v.vertex);
+					o.col = _Water;
 				}
 				else {
 
 					// Hier wird das Displacement angewandt, je Höher der "Höhenwert" des Pixels ist, desto häher erscheint der vertex auf dem Objekt
 					// alle vertex die über dem Schwellwert liegen, erhalten einen neuen Höhenwert, abhängig von dem Höhenwert des Pixels
 					v.vertex.xyz += v.normal * _DisplacementExtension * texVal.y;
+					o.vertex = UnityObjectToClipPos(v.vertex);
+					float BRA = (texVal.y - _LiquidStartingPoint) / (1 - _LiquidStartingPoint);
+					o.col = tex2Dlod(_ColorMap, float4(texValMoisture.y, BRA,  0, 0));
 				}
 
-				// Vertices umwandeln mit der typischen Unity Funktion
-				o.vertex = UnityObjectToClipPos(v.vertex);
-
 				// Farbe des Objekts soll der der Map gleichen
-				o.col = texVal;
+				//o.col = texVal;
 
 				return o;
 			}
