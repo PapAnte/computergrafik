@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.IO;
 
-public class GenerateMaps : MonoBehaviour
+public class GenerateColor : MonoBehaviour
 {
     //Auflösung der Fläche in Pixel
     //x_Component = Anzahl der horizontalen Pixel 
