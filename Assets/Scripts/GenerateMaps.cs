@@ -16,10 +16,6 @@ public class GenerateMaps : MonoBehaviour
     float[,] mPixel;
     int mPixelCount;
 
-    //Bool swapped wenn y>x
-
-    //bool swapped = false;
-
     //Höhengrenze
     public int UPPER_BOUND = 1;
 
@@ -48,13 +44,12 @@ public class GenerateMaps : MonoBehaviour
 
         // Suche das großte Quadrat aus dem Rechteck,
         // welches die Bedingung 2^n + 1 erfüllt.
-        // if Y > X then swapp values
+        // if Y > X then tausche die Werte
 
         if (y_Component > x_Component)
         {
             x_Component = y_original;
             y_Component = x_original;
-            //swapped = true;
         }
 
         while ((x_Component & (x_Component - 1)) != 0)
@@ -100,6 +95,8 @@ public class GenerateMaps : MonoBehaviour
 
     void calculate_biggest_Quad()
     {
+
+        //Anzahl der Divisions
         int mDivisions = x_Component - 1;
 
         //start diamond square algo
@@ -130,33 +127,38 @@ public class GenerateMaps : MonoBehaviour
                 //Schleife für das Iterrieren der Splaten.
                 for (int k = 0; k < numSquares; k++)
                 {
-                    // Bsp: 2. Durchgang bei mDivision = 4
-                    // 1. Aufruf DiamondSquareAlgo(0,0,2,mHeight);
-                    // 2. Aufruf DiamondSquareAlgo(0,2,2,mHeight);
-                    // Ende der Schleife row += 2
-                    // 3. Aufruf DiamondSquareAlgo(2,0,2,mHeight);
-                    // 4. Aufruf DiamondSquareAlgo(2,2,2,mHeight);
-                    // Ende der Schleife
+                    //Hier könnte noch eine Änderung erfolgen! Zuerst werden alle Diamondsteps
+                    //und deren mid-Werte berechnet, damit im SquareSteps die Randwerte mit 4 Werten
+                    //anstatt nur 3 Werten berechnet werden können.
                     diamondStep(row, col, squareSize, smothness);
                     squareStep(row, col, squareSize, smothness);
+
+                    //Das nächste Viereck von links nach rechts wird berechnet
                     col += squareSize;
                 }
 
+                //Das nächste Viereck von oben nach unten wird berechnet 
                 row += squareSize;
             }
 
+            //Anzahl der Vierecke wird verdoppelt
             numSquares *= 2;
+
+            //Größe der Vierecke wird halbiert
             squareSize /= 2;
 
-            //can be editable
+            //Höhenwert, der zur smothness der Heightmap verantwortlich ist wird * 0.5 genommen.
+            //Kann angepasst werden.
             smothness *= 0.5f;
         }
     }
 
     //Diamond Step wird durchgeführt
     //Parameter:
-    //size: Die Größe der quadratischen Matrix
-    //increment: Die Schrittweite (2^n)
+    //row: Gibt die Zeile an
+    //col: Gibt die Spalte an
+    //size: Gibt die Seitenlänge des Vierecks an
+    //offset: Gibt den Höhenwert an
     void diamondStep(int row, int col, int size, float offset)
     {
         topLeft = mPixel[row, col];
@@ -180,6 +182,12 @@ public class GenerateMaps : MonoBehaviour
 
     }
 
+    //Square Step wird durchgeführt
+    //Parameter:
+    //row: Gibt die Zeile an
+    //col: Gibt die Spalte an
+    //size: Gibt die Seitenlänge des Vierecks an
+    //offset: Gibt den Höhenwert an
     void squareStep(int row, int col, int size, float offset)
     {
         int halfSize = (int)(size * 0.5f);
@@ -190,6 +198,8 @@ public class GenerateMaps : MonoBehaviour
         //Debug.Log("col square = " + col);
         //Debug.Log("size square = " + size);
 
+        //Höhenberechnung für die Vertices links und oberhalb des Mittelpunktes eines Vierecks
+
         //Pixel[oben]
         mPixel[row, (col + halfSize)] = ((topLeft + topRight + mid) / 3 + Random.Range(-offset, offset));
         //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
@@ -198,6 +208,8 @@ public class GenerateMaps : MonoBehaviour
         mPixel[(row + halfSize), col] = ((topLeft + botLeft + mid) / 3 + Random.Range(-offset, offset));
         //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
 
+        //Werden die Vertices des letzte Vierecks einer Zeile berechnet muss der Vertex rechts des Mittelpunktes
+        //auch berechnet werden.
         if ((col > ((y_Component - 1) / size)) && (row <= ((x_Component - 1) / size)))
         {
             //Pixel[rechts]
@@ -205,6 +217,9 @@ public class GenerateMaps : MonoBehaviour
 
             //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
         }
+
+        //Werden die Vertices des letzten Vierecks einer Splate berechnet muss der Vertex unter dem Mittelpunkt
+        //auch berechnet werden.
         else if ((row > ((x_Component - 1) / size)) && (col <= ((y_Component - 1) / size)))
         {
             //Pixel[unten]
@@ -212,6 +227,9 @@ public class GenerateMaps : MonoBehaviour
             //Debug.Log("Pixel unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
 
         }
+
+        //Werden die Vertices des letzten Vierecks einer Splate und Zeile berechnet müssen auch die Vertices
+        // rechts und unterhalb des Mittelpunktes berechnet werden.
         else if ((row > ((x_Component - 1) / size)) && (col > ((y_Component - 1) / size)) || size == (int)(y_Component - 1))
         {
             //Pixel[unten]
@@ -224,6 +242,10 @@ public class GenerateMaps : MonoBehaviour
         }
     }
 
+    //Die Funktion MinMaxHeight findet die Minimale und Maximale berechnete Höhe aller Vertices
+    //Output: float array
+    //Output-Parameter: float[0] = minimum
+    //Output-Parameter: float[1] = maximum
     float[] MinMaxHeight()
     {
         float min = mPixel[0, 0];
@@ -248,11 +270,13 @@ public class GenerateMaps : MonoBehaviour
 
         Color color;
 
+        //Maximum und Minimum Höhe wird gespeichert 
         float[] _MinMaxHeight = MinMaxHeight();
 
+        //totaler_abstand enthält die Entfernung zwischen Max und Min.
         float totaler_abstand = _MinMaxHeight[1] - _MinMaxHeight[0];
 
-        Debug.Log("totaler_Abstand = " + totaler_abstand);
+        //Debug.Log("totaler_Abstand = " + totaler_abstand);
 
         // pixel farben setzen für jeden Vertice in einer Spalte; das ganze wird Reihe für Reihe durchlaufen
         for (int i = 0; i < y_original; i++)
@@ -261,7 +285,9 @@ public class GenerateMaps : MonoBehaviour
             {
                 float ac_height = mPixel[i, j];
 
+                //Die Höhenwerte aller Pixel/Vertices werden zwischen 0 und 1 normiert!
                 mPixel[i, j] = ((ac_height - _MinMaxHeight[0]) / totaler_abstand);
+
                 //Der Höhenwert soll sich zwischen 0 und 1 bewegen, das heißt eine 1 ist der höchste Punkt und damit weiß
                 //weiß ist im RGB code (255, 255, 255) und schwarz (0, 0, 0); damit kann ich jede Höhe, welche in 
                 //y gespeichert ist, mit 255 multiplizieren und erhalte somit eine Grauabstufung von schwarz nach weiß
