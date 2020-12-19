@@ -316,11 +316,12 @@ public class GenerateMaps : MonoBehaviour
         texture.Apply();
 
         // generate image from Texture
+        // ------------------------------------------------------------------------------------------
         string _fullpath = this.moisturemapPath;
         byte[] _bytes = texture.EncodeToPNG();
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
         Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
-
+        // ------------------------------------------------------------------------------------------ /
         return texture;
     }
 

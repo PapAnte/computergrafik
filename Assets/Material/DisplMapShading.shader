@@ -1,4 +1,4 @@
-﻿Shader "CG_Lecture/DisplacementMapShader"
+﻿Shader "DisplacementMapShader"
 {
 	Properties
 	{
