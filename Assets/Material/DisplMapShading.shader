@@ -11,9 +11,8 @@
 		// Definiere _HeightMap, _MoistureMap, und _ColorMap, diese können über einen Input in der GUI zugewiesen werden
 		_HeightMap("Height Map", 2D) = "normal" {}
 		_MoistureMap("Moisture Map", 2D) = "normal" {}
-		_ColorMap("Color Map", 2D) = "normal" {}
-
-		_Water("Water", Color) = (0.02723388,0.1524978,0.6415094,1)
+		_ColorMapLand("Color Map Land", 2D) = "normal" {}
+		_ColorMapWater("Color Map Water", 2D) = "normal" {}
 	}
 	SubShader
 	{
@@ -28,8 +27,8 @@
 
 			sampler2D _HeightMap;
 			sampler2D _MoistureMap;
-			sampler2D _ColorMap;
-			float4 _Water;
+			sampler2D _ColorMapLand;
+			sampler2D _ColorMapWater;
 			float4 _HeightMap_ST;
 			float _DisplacementExtension;
 			float _LiquidStartingPoint;
@@ -46,6 +45,7 @@
 			v2f vert(appdata_full v)
 			{
 				v2f o;
+				const float4 Water = float4(0, 0, 1, 1);
 
 				// Farben aus der Textur extrahieren --> Aus Übung 3.3 #Es gibt keine Tutorials dafür
 				fixed4 texVal = tex2Dlod(_HeightMap, float4(v.texcoord.xy, 0, 0));
@@ -58,7 +58,8 @@
 					// alle Pixel die unter oder auf dem Schwellenwert liegen, erhalten denselben Wert
 					v.vertex.xyz += v.normal * _LiquidStartingPoint * _DisplacementExtension;
 					o.vertex = UnityObjectToClipPos(v.vertex);
-					o.col = _Water;
+					float BRA = (_LiquidStartingPoint - texVal.y) / (_LiquidStartingPoint);
+					o.col = tex2Dlod(_ColorMapWater, float4(texValMoisture.y, BRA, 0, 0));
 				}
 				else {
 
@@ -67,7 +68,7 @@
 					v.vertex.xyz += v.normal * _DisplacementExtension * texVal.y;
 					o.vertex = UnityObjectToClipPos(v.vertex);
 					float BRA = (texVal.y - _LiquidStartingPoint) / (1 - _LiquidStartingPoint);
-					o.col = tex2Dlod(_ColorMap, float4(texValMoisture.y, BRA,  0, 0));
+					o.col = tex2Dlod(_ColorMapLand, float4(texValMoisture.y, BRA,  0, 0));
 				}
 
 				// Farbe des Objekts soll der der Map gleichen
