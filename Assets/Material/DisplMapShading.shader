@@ -2,15 +2,20 @@
 {
 	Properties
 	{
-		_DisplacementExtension("Terrain Scale", Range(0, 1)) = 0.01
+		// Definiere _DisplacementExtension, dieser Wert regelt den Grad des Displacements
+		_DisplacementExtension("Terrain Scale", Range(0, 1)) = 0
+		
+		// Definiere _LiquidStartingPoint, dieser Wert legt fest, bei welcher Höhe nur noch Flüssigkeit angezeigt werden soll
 		_LiquidStartingPoint("Liquid threshold", Range(0, 1)) = 0
+
+		// Definiere _HeightMap, _MoistureMap, und _ColorMap, diese können über einen Input in der GUI zugewiesen werden
 		_HeightMap("Height Map", 2D) = "normal" {}
 		_MoistureMap("Moisture Map", 2D) = "normal" {}
 		_ColorMap("Color Map", 2D) = "normal" {}
 	}
 	SubShader
 	{
-		Tags { "RenderType" = "Transparent" }
+		Tags { "RenderType" = "Opaque" }
 		Pass
 		{
 			CGPROGRAM
@@ -37,21 +42,27 @@
 			{
 				v2f o;
 
-				// Farben aus der Textur extrahieren --> Aus Übung 3.3 #Es gibt keine Tutorials dafür...
+				// Farben aus der Textur extrahieren --> Aus Übung 3.3 #Es gibt keine Tutorials dafür
 				fixed4 texVal = tex2Dlod(_HeightMap, float4(v.texcoord.xy, 0, 0));
 
-				if (texVal.y < _LiquidStartingPoint) {
+				// Da die Heightmap nur Werte zwischen 0 und 1 besitzt, kann hier darauf geprüft werden, ob der "Höhenwert" eines Pixels unterhalb unserer Flüssigkeitsschwelle liegt
+				if (texVal.y <= _LiquidStartingPoint) {
+
+					// Hier wird das Displacement angewandt, je Höher der "Höhenwert" des Pixels ist, desto häher erscheint der vertex auf dem Objekt, 
+					// alle Pixel die unter oder auf dem Schwellenwert liegen, erhalten denselben Wert
 					v.vertex.xyz += v.normal * _LiquidStartingPoint * _DisplacementExtension;
 				}
 				else {
-					// displace z value of vertex by texture value multiplied with Scale
+
+					// Hier wird das Displacement angewandt, je Höher der "Höhenwert" des Pixels ist, desto häher erscheint der vertex auf dem Objekt
+					// alle vertex die über dem Schwellwert liegen, erhalten einen neuen Höhenwert, abhängig von dem Höhenwert des Pixels
 					v.vertex.xyz += v.normal * _DisplacementExtension * texVal.y;
 				}
 
-				// Convert Vertex Data from Object to Clip Space
+				// Vertices umwandeln mit der typischen Unity Funktion
 				o.vertex = UnityObjectToClipPos(v.vertex);
 
-				// set texture value as color.
+				// Farbe des Objekts soll der der Map gleichen
 				o.col = texVal;
 
 				return o;
