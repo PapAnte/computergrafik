@@ -20,11 +20,12 @@ public class GenerateMaps : MonoBehaviour
     public int UPPER_BOUND = 1;
 
     //Eckpunkte des Quadrats mit Höheninformation
-    float topLeft;
-    float botLeft;
-    float topRight;
-    float botRight;
-    float mid;
+    int Zaehler = 0;
+    float[] topLeft;
+    float[] botLeft;
+    float[] topRight;
+    float[] botRight;
+    float[] mid;
 
     //
     private int width;
@@ -104,8 +105,6 @@ public class GenerateMaps : MonoBehaviour
 
     void calculate_biggest_Quad()
     {
-
-        //Anzahl der Divisions
         int mDivisions = x_Component - 1;
 
         //start diamond square algo
@@ -126,28 +125,52 @@ public class GenerateMaps : MonoBehaviour
         //Schleife wie oft der DiamondSquare ausgeführt werden muss.
         for (int i = 0; i < iterations; i++)
         {
-            int row = 0;
+            int row_dia = 0;
+            int row_square = 0;
+            int anzahl = numSquares * numSquares;
+
+            topLeft = new float[anzahl];
+            topRight = new float[anzahl];
+            botLeft = new float[anzahl];
+            botRight = new float[anzahl];
+            mid = new float[anzahl];
 
             //Schleife für das Iterrieren der Zeilen.
             for (int j = 0; j < numSquares; j++)
             {
-                int col = 0;
+                int col_dia = 0;
 
-                //Schleife für das Iterrieren der Splaten.
+                //Schleife für das Iterrieren der Splaten des DiamondSteps
                 for (int k = 0; k < numSquares; k++)
                 {
-                    //Hier könnte noch eine Änderung erfolgen! Zuerst werden alle Diamondsteps
-                    //und deren mid-Werte berechnet, damit im SquareSteps die Randwerte mit 4 Werten
-                    //anstatt nur 3 Werten berechnet werden können.
-                    diamondStep(row, col, squareSize, smothness);
-                    squareStep(row, col, squareSize, smothness);
+                    diamondStep(row_dia, col_dia, squareSize, smothness);
 
                     //Das nächste Viereck von links nach rechts wird berechnet
-                    col += squareSize;
+                    col_dia += squareSize;
                 }
 
                 //Das nächste Viereck von oben nach unten wird berechnet 
-                row += squareSize;
+                row_dia += squareSize;
+            }
+
+            Zaehler = 0;
+
+            //Schleife für das Iterrieren der Zeilen.
+            for (int j = 0; j < numSquares; j++)
+            {
+                int col_square = 0;
+
+                //Schleife für das Iterrieren der Splaten des DiamondSteps
+                for (int k = 0; k < numSquares; k++)
+                {
+                    squareStep(row_square, col_square, squareSize, smothness, numSquares);
+
+                    //Das nächste Viereck von links nach rechts wird berechnet
+                    col_square += squareSize;
+                }
+
+                //Das nächste Viereck von oben nach unten wird berechnet
+                row_square += squareSize;
             }
 
             //Anzahl der Vierecke wird verdoppelt
@@ -159,6 +182,8 @@ public class GenerateMaps : MonoBehaviour
             //Höhenwert, der zur smothness der Heightmap verantwortlich ist wird * 0.5 genommen.
             //Kann angepasst werden.
             smothness *= 0.5f;
+
+            Zaehler = 0;
         }
     }
 
@@ -170,10 +195,13 @@ public class GenerateMaps : MonoBehaviour
     //offset: Gibt den Höhenwert an
     void diamondStep(int row, int col, int size, float offset)
     {
-        topLeft = mPixel[row, col];
-        botLeft = mPixel[(row + size), col];
-        topRight = mPixel[row, (col + size)];
-        botRight = mPixel[(row + size), (col + size)];
+
+        //Debug.Log("Zähler Dia Step = " + Zaehler);
+
+        topLeft[Zaehler] = mPixel[row, col];
+        botLeft[Zaehler] = mPixel[(row + size), col];
+        topRight[Zaehler] = mPixel[row, (col + size)];
+        botRight[Zaehler] = mPixel[(row + size), (col + size)];
 
         //Debug.Log("row dia = " + row);
         //Debug.Log("col dia = " + col);
@@ -185,9 +213,11 @@ public class GenerateMaps : MonoBehaviour
         //Debug.Log("mid_x = " + mid_x);
         //Debug.Log("mid_y = " + mid_y);
 
-        mPixel[mid_x, mid_y] = ((topLeft + topRight + botLeft + botLeft) * 0.25f + Random.Range(-offset, offset));
+        mPixel[mid_x, mid_y] = ((topLeft[Zaehler] + topRight[Zaehler] + botLeft[Zaehler] + botLeft[Zaehler]) * 0.25f + Random.Range(-offset, offset));
 
-        mid = mPixel[mid_x, mid_y];
+        mid[Zaehler] = mPixel[mid_x, mid_y];
+
+        Zaehler += 1;
 
     }
 
@@ -197,58 +227,133 @@ public class GenerateMaps : MonoBehaviour
     //col: Gibt die Spalte an
     //size: Gibt die Seitenlänge des Vierecks an
     //offset: Gibt den Höhenwert an
-    void squareStep(int row, int col, int size, float offset)
+    //numSquares: Gibt die Anzahl der Vierecke pro Zeile an
+    void squareStep(int row, int col, int size, float offset, int numSquares)
     {
         int halfSize = (int)(size * 0.5f);
 
-        //Debug.Log("halfSize = " + halfSize);
+        //Debug.Log("Zähler Square Step = " + Zaehler);
 
+        //Debug.Log("halfSize = " + halfSize);
+        //Debug.Log("numSquares = " + numSquares);
         //Debug.Log("row square = " + row);
         //Debug.Log("col square = " + col);
         //Debug.Log("size square = " + size);
 
-        //Höhenberechnung für die Vertices links und oberhalb des Mittelpunktes eines Vierecks
+        //Höhenberechnung für die Vertices links, rechts unterhalb und oberhalb des Mittelpunktes eines Vierecks
 
-        //Pixel[oben]
-        mPixel[row, (col + halfSize)] = ((topLeft + topRight + mid) / 3 + Random.Range(-offset, offset));
-        //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
-
-        //Pixel[links]
-        mPixel[(row + halfSize), col] = ((topLeft + botLeft + mid) / 3 + Random.Range(-offset, offset));
-        //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
-
-        //Werden die Vertices des letzte Vierecks einer Zeile berechnet muss der Vertex rechts des Mittelpunktes
-        //auch berechnet werden.
-        if ((col > ((y_Component - 1) / size)) && (row <= ((x_Component - 1) / size)))
+        if (row == 0 && col == 0)
         {
-            //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight + botRight + mid) / 3 + Random.Range(-offset, offset));
+            int mid_right = (Zaehler + (numSquares - 1));
+            int mid_bottom = ((numSquares * numSquares) - numSquares + Zaehler);
 
-            //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+            //Pixel[oben]
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+
+            //Pixel[links]
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
+
+        }
+        else if (row != 0 && col == 0)
+        {
+            int mid_right = (Zaehler + (numSquares - 1));
+            int mid_up = (Zaehler - numSquares);
+
+            //Pixel[oben]
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+
+            //Pixel[links]
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
+        }
+        else if (row == 0 && col != 0)
+        {
+            int mid_bottom = ((numSquares * numSquares) - numSquares + Zaehler);
+            int mid_left = (Zaehler - 1);
+
+            //Pixel[oben]
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+
+            //Pixel[links]
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
+
+        }
+        else
+        {
+            int mid_up = (Zaehler - numSquares);
+            int mid_left = (Zaehler - 1);
+
+            //Pixel[oben]
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+
+            //Pixel[links]
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
         }
 
-        //Werden die Vertices des letzten Vierecks einer Splate berechnet muss der Vertex unter dem Mittelpunkt
-        //auch berechnet werden.
-        else if ((row > ((x_Component - 1) / size)) && (col <= ((y_Component - 1) / size)))
+        if ((row >= ((x_Component - 1) - size)) && (col >= ((y_Component - 1) - size)) || ((x_Component - 1) == size))
         {
+            int mid_up = (Zaehler - ((numSquares * numSquares) - numSquares));
+            int mid_left = (Zaehler - (numSquares - 1));
+
+            //Pixel[rechts]
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel else if rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+
             //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft + botRight + mid) / 3 + Random.Range(-offset, offset));
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel else if unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
+        }
+        else if ((col >= ((y_Component - 1) - size)) && (row < ((x_Component - 1) - size)))
+        {
+            int mid_left = (Zaehler - (numSquares - 1));
+            int mid_bottom = (Zaehler + numSquares);
+
+            //Pixel[rechts]
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+
+            //Pixel[unten]
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
             //Debug.Log("Pixel unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
 
         }
-
-        //Werden die Vertices des letzten Vierecks einer Splate und Zeile berechnet müssen auch die Vertices
-        // rechts und unterhalb des Mittelpunktes berechnet werden.
-        else if ((row > ((x_Component - 1) / size)) && (col > ((y_Component - 1) / size)) || size == (int)(y_Component - 1))
+        else if ((row >= ((x_Component - 1) - size)) && (col < ((y_Component - 1) - size)))
         {
-            //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft + botRight + mid) / 3 + Random.Range(-offset, offset));
-            //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight + botRight + mid) / 3 + Random.Range(-offset, offset));
+            int mid_up = (Zaehler - ((numSquares * numSquares) - numSquares));
+            int mid_right = (Zaehler + 1);
 
+            //Pixel[rechts]
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
             //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+
+            //Pixel[unten]
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
+
+        }
+        else
+        {
+            int mid_right = (Zaehler + 1);
+            int mid_bottom = (Zaehler + numSquares);
+
+            //Pixel[rechts]
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
+            //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+
+            //Pixel[unten]
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
             //Debug.Log("Pixel unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
         }
+
+        Zaehler += 1;
+
     }
 
     //Die Funktion MinMaxHeight findet die Minimale und Maximale berechnete Höhe aller Vertices
