@@ -58,12 +58,14 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
-				float4 col : COLOR;
-				half3 worldNormal : TEXCOORD1;
-				half3 worldViewDir : TEXCOORD2;
+				//half3 worldNormal : TEXCOORD1;
+				//half3 worldViewDir : TEXCOORD2;
 				float2 uv : TEXCOORD0;
 				float2 uv2 : TEXCOORD6;
-				half3 mapikusnormalis : TEXCOORD3;
+				//half3 mapikusnormalis : TEXCOORD3;
+				float4 col : COLOR;
+				half3 texValMoisture : TEXCOORD4;
+				half3 texVal : TEXCOORD5;
 			};
 
 			float _MaxDepth;
@@ -91,63 +93,21 @@
 				v2f o;
 
 				// Farben aus der Textur extrahieren --> Aus Übung 3.3 #Es gibt keine Tutorials dafür
-				fixed4 texVal = tex2Dlod(_HeightMap, float4(v.texcoord.xy, 0, 0));
-				fixed4 texValMoisture = tex2Dlod(_MoistureMap, float4(v.texcoord.xy, 0, 0));
+				o.texVal = tex2Dlod(_HeightMap, float4(v.texcoord.xy, 0, 0));
+				o.texValMoisture = tex2Dlod(_MoistureMap, float4(v.texcoord.xy, 0, 0));
 
 				// Da die Heightmap nur Werte zwischen 0 und 1 besitzt, kann hier darauf geprüft werden, ob der "Höhenwert" eines Pixels unterhalb unserer Flüssigkeitsschwelle liegt
-				if (texVal.y <= _LiquidStartingPoint) {
-
+				if (o.texVal.y <= _LiquidStartingPoint) {
 					// Hier wird das Displacement angewandt, je Höher der "Höhenwert" des Pixels ist, desto häher erscheint der vertex auf dem Objekt, 
 					// alle Pixel die unter oder auf dem Schwellenwert liegen, erhalten denselben Wert
 					v.vertex.xyz += v.normal * _LiquidStartingPoint * _DisplacementExtension;
 					o.vertex = UnityObjectToClipPos(v.vertex);
-					float BRA = (_LiquidStartingPoint - texVal.y) / (_LiquidStartingPoint);
-					o.col = tex2Dlod(_ColorMapWater, float4(texValMoisture.y, BRA, 0, 0));
-
-					// Phong-Shading
-					o.worldNormal = UnityObjectToWorldNormal(v.normal);
-					o.worldViewDir = normalize(WorldSpaceViewDir(v.vertex));
-
-					ambientLight = float4(ShadeSH9(half4(o.worldNormal, 1)), 1);
-					nl = max(0, dot(o.worldNormal, _WorldSpaceLightPos0.xyz));
-					diffuseLight = nl * _LightColor0;
-					worldSpaceReflection = reflect(normalize(-_WorldSpaceLightPos0.xyz), o.worldNormal);
-					re = pow(max(dot(worldSpaceReflection, o.worldViewDir), 0), _Shininess);
-
-					spec = re * _LightColor0;
-					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
-					// Zudem muss die Farbe noch mit der Reflexion der Oberfläche verrechnet werden
-					o.col *= _Ka * ambientLight + _Kd * diffuseLight;
-					o.col += _Ks * spec;
-
-					o.uv = TRANSFORM_TEX(v.texcoord, _NormalMap1);
-					o.uv += TRANSFORM_TEX(v.texcoord, _NormalMap2);
-
-					// Shift the uvs over time.
-					o.uv += _Speed * _Time.x;
-					
-					checkLiquidThreshold = 1.0f;
 				}
 				else {
-
 					// Hier wird das Displacement angewandt, je Höher der "Höhenwert" des Pixels ist, desto häher erscheint der vertex auf dem Objekt
 					// alle vertex die über dem Schwellwert liegen, erhalten einen neuen Höhenwert, abhängig von dem Höhenwert des Pixels
-					v.vertex.xyz += v.normal * _DisplacementExtension * texVal.y;
-					o.vertex = UnityObjectToClipPos(v.vertex);
-					float BRA = (texVal.y - _LiquidStartingPoint) / (1 - _LiquidStartingPoint);
-					o.col = tex2Dlod(_ColorMapLand, float4(texValMoisture.y, BRA,  0, 0));
-
-					// Lambert-Shading
-					// Schafft einen übergang von hell nach dunkel
-					o.worldNormal = UnityObjectToWorldNormal(v.normal);
-					ambientLight = float4(ShadeSH9(half4(o.worldNormal, 1)), 1);
-					nl = max(0, dot(o.worldNormal, _WorldSpaceLightPos0.xyz));
-					diffuseLight = nl * _LightColor0;
-					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
-					o.col *= (_Ka * ambientLight +  _Kd * diffuseLight);
-
-					checkLiquidThreshold = 0.0f;
-
+					v.vertex.xyz += v.normal * _DisplacementExtension * o.texVal.y;
+					o.vertex = UnityObjectToClipPos(v.vertex);	
 				}
 
 				// Farbe des Objekts soll der der Map gleichen
@@ -160,15 +120,43 @@
 			fixed4 frag(v2f i) : SV_Target
 			{
 				fixed4 col;
+				if (i.texVal.y <= _LiquidStartingPoint)
+				{
+					float BRA = (_LiquidStartingPoint - i.texVal.y) / (_LiquidStartingPoint);
+					i.col = tex2Dlod(_ColorMapWater, float4(i.texValMoisture.y, BRA, 0, 0));
+					/*
+					// Phong-Shading
+					o.worldNormal = UnityObjectToWorldNormal(v.normal);
+					o.worldViewDir = normalize(WorldSpaceViewDir(v.vertex));
+					ambientLight = float4(ShadeSH9(half4(o.worldNormal, 1)), 1);
+					nl = max(0, dot(o.worldNormal, _WorldSpaceLightPos0.xyz));
+					diffuseLight = nl * _LightColor0;
+					worldSpaceReflection = reflect(normalize(-_WorldSpaceLightPos0.xyz), o.worldNormal);
+					re = pow(max(dot(worldSpaceReflection, o.worldViewDir), 0), _Shininess);
 
-				if (checkLiquidThreshold == 1.0f) {
-
+					spec = re * _LightColor0;
+					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
+					// Zudem muss die Farbe noch mit der Reflexion der Oberfläche verrechnet werden
+					o.col *= _Ka * ambientLight + _Kd * diffuseLight;
+					o.col += _Ks * spec;
+					*/
 				}
-				else {
-					
+				else
+				{
+					float BRA = (i.texVal.y - _LiquidStartingPoint) / (1 - _LiquidStartingPoint);
+					i.col = tex2Dlod(_ColorMapLand, float4(i.texValMoisture.y, BRA, 0, 0));
+					/*
+					// Lambert-Shading
+					// Schafft einen übergang von hell nach dunkel
+					o.worldNormal = UnityObjectToWorldNormal(v.normal);
+					ambientLight = float4(ShadeSH9(half4(o.worldNormal, 1)), 1);
+					nl = max(0, dot(o.worldNormal, _WorldSpaceLightPos0.xyz));
+					diffuseLight = nl * _LightColor0;
+					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
+					o.col *= (_Ka * ambientLight +  _Kd * diffuseLight);
+					*/
 				}
 				col = i.col;
-				
 				return col;
 			}
 			ENDCG
