@@ -310,9 +310,8 @@ public class GenerateMaps : MonoBehaviour
         // definierte Pixel anwenden
         texture.Apply();
 
-        // connect texture to material of GameObject this script is attached to
+        // Verbindet die Textur mit dem Material von GameObject, an das dieses Skript angehängt ist
         GetComponent<MeshRenderer>().material.mainTexture = texture;
-        //GetComponent<Renderer>().material.SetTexture("_NewTexture", texture);
 
         // ------------------------------------------------------------------------------------------
         string _fullpath = heightmapPath;
@@ -323,9 +322,11 @@ public class GenerateMaps : MonoBehaviour
         return texture;   
     }
 
-    // 
+    // generiert die MoistureMaP
+    // Output: Texture2D texture
     Texture2D GenerateMoisture()
     {
+        // Laden der HeightMap um deren Dimensionen zu bestimmen
         try
         {
             Texture2D heightmap = new Texture2D(1, 1);
@@ -334,23 +335,28 @@ public class GenerateMaps : MonoBehaviour
             this.width = heightmap.width;
             this.height = heightmap.height;
         }
+        // Existiert die HeightMap unter dem angegeben Pfad nicht, wird die geworfene Exception abgefangen
         catch (FileNotFoundException)
         {
             Debug.Log("File HeightMapMap.png not found!");
         }
+        // Erstellen der texture in die die MoistureMap gespeichert wird
         Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+        // Durchläuft die komplette Weite und Höhe und bestimmt je Pixel die Farbe
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
+                // In der Variablen wird die in der Funktion CalculateColorMoisture generierte Farbe gespeichert
                 Color color = CalculateColorMoisture(x, y);
+                // Der Pixel an der Stelle (x,y) bekommt die vorher generierte Farbe
                 texture.SetPixel(x, y, color);
             }
         }
         // Apply the changes to the texture and upload the updated texture to the GPU
         texture.Apply();
 
-        // generate image from Texture
+        // Generiert ein Bild aus texture
         // ------------------------------------------------------------------------------------------
         string _fullpath = this.moisturemapPath;
         byte[] _bytes = texture.EncodeToPNG();
@@ -360,17 +366,24 @@ public class GenerateMaps : MonoBehaviour
         return texture;
     }
 
-    // 
+    // Berechnet die Farbe mit PerlinNoise
+    // Paramter:
+    // x : X-Wert der MoistureMap
+    // y : y-Wert der MositureMap
+    // Output: Color
     Color CalculateColorMoisture(int x, int y)
     {
+        // Pixelkoordinaten sind ganze Zahlen, daher müssen diese in Dezimalzahlen umgewandelt werden, damit wir unterschiedliche Werte aus PerlinNoise bekommen
+        // Es wird mit scale multipliziert, damit wir eine dichtere PerlinNoise bekommen
         float xCoord = (float)x / width * scale;
         float yCoord = (float)y / height * scale;
-
+        // Berechnung der PerlinNoise-Wertes mit den x und y Koordinaten
         float perlin = Mathf.PerlinNoise(xCoord, yCoord);
         return new Color(perlin, perlin, perlin);
     }
 
-    // 
+    // Läd ein Bild aus dem angegeben Pfad und speichert dieses in texture
+    // Output: Texture2D
     Texture2D GetColorMapLand()
     {
         Texture2D colormap = new Texture2D(1, 1);
@@ -380,6 +393,8 @@ public class GenerateMaps : MonoBehaviour
         return colormap;
     }
 
+    // Läd ein Bild aus dem angegeben Pfad und speichert dieses in texture
+    // Output: Texture2D
     Texture2D GetColorMapWater()
     {
         Texture2D colormap = new Texture2D(1, 1);
@@ -389,6 +404,8 @@ public class GenerateMaps : MonoBehaviour
         return colormap;
     }
 
+    // Läd ein Bild aus dem angegeben Pfad und speichert dieses in texture
+    // Output: Texture2D
     Texture2D GetNormalMap1()
     {
         Texture2D normalmap = new Texture2D(1, 1);
@@ -398,6 +415,8 @@ public class GenerateMaps : MonoBehaviour
         return normalmap;
     }
 
+    // Läd ein Bild aus dem angegeben Pfad und speichert dieses in texture
+    // Output: Texture2D
     Texture2D GetNormalMap2()
     {
         Texture2D normalmap = new Texture2D(1, 1);

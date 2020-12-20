@@ -126,7 +126,6 @@
 					// Shift the uvs over time.
 					o.uv += _Speed * _Time.x;
 					
-
 					checkLiquidThreshold = 1.0f;
 				}
 				else {
