@@ -19,7 +19,7 @@
 		_Ka("Ambient Reflectance", Range(0, 1)) = 0.5
 		_Kd("Diffuse Reflectance", Range(0, 1)) = 0.5
 		_Ks("Specular Reflectance", Range(0, 1)) = 0.5
-		_Shininess("Shininess", Range(0.1, 1000)) = 100
+		_Shininess("Shininess", Range(0, 100)) = 100
 
 		_Speed("Speed", Range(0, 1)) = 0.5
 		_NormalMap1("Normal Map 1", 2D) = "bump" {}
@@ -67,7 +67,6 @@
 			};
 
 			float _MaxDepth;
-			fixed4 _Color;
 			float _Ka, _Kd, _Ks, _Shininess;
 
 			sampler2D _NormalMap1;
@@ -121,7 +120,6 @@
 					o.col *= _Ka * ambientLight + _Kd * diffuseLight;
 					o.col += _Ks * spec;
 
-					
 					o.uv = TRANSFORM_TEX(v.texcoord, _NormalMap1);
 					o.uv += TRANSFORM_TEX(v.texcoord, _NormalMap2);
 

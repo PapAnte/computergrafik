@@ -36,6 +36,8 @@ public class GenerateMaps : MonoBehaviour
     string moisturemapPath = ".//Assets//Scripts//image//moisturemap.png";
     string colorMapLandPath = ".//Assets//Scripts//image//colormap_land.png";
     string colorMapWaterPath = ".//Assets//Scripts//image//colormap_water.png";
+    string colorNormalMap1Path = ".//Assets//Scripts//image//normal_map_1.png";
+    string colorNormalMap2Path = ".//Assets//Scripts//image//normal_map_2.png";
 
     // Start is called before the first frame update
     void Start()
@@ -88,6 +90,10 @@ public class GenerateMaps : MonoBehaviour
         renderercolormapland.material.SetTexture("_ColorMapLand", GetColorMapLand());
         Renderer renderercolormapwater = GetComponent<Renderer>();
         renderercolormapwater.material.SetTexture("_ColorMapWater", GetColorMapWater());
+        Renderer renderernormalmap1 = GetComponent<Renderer>();
+        renderernormalmap1.material.SetTexture("_NormalMap1", GetNormalMap1());
+        Renderer renderernormalmap2 = GetComponent<Renderer>();
+        renderernormalmap2.material.SetTexture("_NormalMap2", GetNormalMap2());
     }
 
     void Update()
@@ -381,5 +387,23 @@ public class GenerateMaps : MonoBehaviour
         colormap.LoadImage(tmpBytes);
 
         return colormap;
+    }
+
+    Texture2D GetNormalMap1()
+    {
+        Texture2D normalmap = new Texture2D(1, 1);
+        byte[] tmpBytes = File.ReadAllBytes(this.colorNormalMap1Path);
+        normalmap.LoadImage(tmpBytes);
+
+        return normalmap;
+    }
+
+    Texture2D GetNormalMap2()
+    {
+        Texture2D normalmap = new Texture2D(1, 1);
+        byte[] tmpBytes = File.ReadAllBytes(this.colorNormalMap2Path);
+        normalmap.LoadImage(tmpBytes);
+
+        return normalmap;
     }
 }
