@@ -110,7 +110,7 @@ public class GenerateMaps : MonoBehaviour
     {
         //Renderer renderer = GetComponent<Renderer>();
         //renderer.material.mainTexture = CalculateColor();
-        transform.Rotate(0, -0.02f, 0, Space.World);
+        transform.Rotate(0, -0.04f, 0, Space.World);
     }
 
     void calculate_biggest_Quad()
