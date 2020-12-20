@@ -174,23 +174,29 @@
 					nl = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
 
 					float4 diffuseLight = nl * _LightColor0;
+
+					worldSpaceReflection = 
+							reflect(normalize(-_WorldSpaceLightPos0.xyz), normal);
+					re = pow(max(dot(worldSpaceReflection, i.worldViewDir), 0), _Shininess);
+						spec = re * _LightColor0;
 					i.col *= (_Ka* ambientLight +  _Kd* diffuseLight);
+					i.col += _Ks * spec;
 
 					// -------------- Test Bereich - Ende ---------------------------------------*/
 					
-					// Phong-Shading
-					// ambientLight = float4(ShadeSH9(half4(i.worldNormal, 1)), 1);
-					// nl = max(0, dot(i.worldNormal, _WorldSpaceLightPos0.xyz));
-					// diffuseLight = nl * _LightColor0;
-
+					
 					/*
+						// Phong-Shading
+						// ambientLight = float4(ShadeSH9(half4(i.worldNormal, 1)), 1);
+						// nl = max(0, dot(i.worldNormal, _WorldSpaceLightPos0.xyz));
+						// diffuseLight = nl * _LightColor0;
+
 						worldSpaceReflection = 
 							reflect(normalize(-_WorldSpaceLightPos0.xyz), i.worldNormal);
 						re = pow(max(dot(worldSpaceReflection, i.worldViewDir), 0), _Shininess);
 						spec = re * _LightColor0;
 						i.col *= _Ka * ambientLight + _Kd * diffuseLight;
 						i.col += _Ks * spec;
-
 					*/
 
 					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
@@ -209,7 +215,6 @@
 
 					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
 					i.col *= (_Ka * ambientLight +  _Kd * diffuseLight);
-					
 				}
 				col = i.col;
 				return col;
