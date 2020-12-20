@@ -21,6 +21,10 @@
 		_Ks("Specular Reflectance", Range(0, 1)) = 0.5
 		_Shininess("Shininess", Range(0.1, 1000)) = 100
 
+		_Speed("Speed", Range(0, 1)) = 0.5
+		_NormalMap1("Normal Map 1", 2D) = "bump" {}
+		_NormalMap2("Normal Map 2", 2D) = "bump" {}
+
 	}
 	SubShader
 	{
@@ -49,17 +53,30 @@
 			float _DisplacementExtension;
 			float _LiquidStartingPoint;
 
+			float checkLiquidThreshold;
+
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
 				float4 col : COLOR;
-				half3 worldNormal : TEXCOORD0;
-				half3 worldViewDir : TEXCOORD1;
+				half3 worldNormal : TEXCOORD1;
+				half3 worldViewDir : TEXCOORD2;
+				float2 uv : TEXCOORD0;
+				float2 uv2 : TEXCOORD6;
+				half3 mapikusnormalis : TEXCOORD3;
 			};
 
 			float _MaxDepth;
 			fixed4 _Color;
 			float _Ka, _Kd, _Ks, _Shininess;
+
+			sampler2D _NormalMap1;
+			sampler2D _NormalMap2;
+
+			float4 _NormalMap1_ST;
+			float4 _NormalMap2_ST;
+
+			float _Speed;
 
 			// VERTEX SHADER
 			v2f vert(appdata_full v)
@@ -103,6 +120,16 @@
 					// Zudem muss die Farbe noch mit der Reflexion der Oberfläche verrechnet werden
 					o.col *= _Ka * ambientLight + _Kd * diffuseLight;
 					o.col += _Ks * spec;
+
+					
+					o.uv = TRANSFORM_TEX(v.texcoord, _NormalMap1);
+					o.uv += TRANSFORM_TEX(v.texcoord, _NormalMap2);
+
+					// Shift the uvs over time.
+					o.uv += _Speed * _Time.x;
+					
+
+					checkLiquidThreshold = 1.0f;
 				}
 				else {
 
@@ -122,6 +149,8 @@
 					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
 					o.col *= (_Ka * ambientLight +  _Kd * diffuseLight);
 
+					checkLiquidThreshold = 0.0f;
+
 				}
 
 				// Farbe des Objekts soll der der Map gleichen
@@ -133,7 +162,16 @@
 			// FRAGMENT / PIXEL SHADER
 			fixed4 frag(v2f i) : SV_Target
 			{
-				fixed4 col = i.col;
+				fixed4 col;
+
+				if (checkLiquidThreshold == 1.0f) {
+
+				}
+				else {
+					
+				}
+				col = i.col;
+				
 				return col;
 			}
 			ENDCG
