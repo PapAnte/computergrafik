@@ -100,6 +100,7 @@ public class GenerateMaps : MonoBehaviour
         Renderer renderernormalmap2 = GetComponent<Renderer>();
         renderernormalmap2.material.SetTexture("_NormalMap2", GetNormalMap2());
 
+        // Material generieren und als Skybox-Material festlegen
         skyboxMaterial = new Material(Shader.Find("Skybox/Panoramic"));
         skyboxMaterial.mainTexture = GetSkyboxTexture();
         RenderSettings.skybox = skyboxMaterial;
@@ -109,6 +110,7 @@ public class GenerateMaps : MonoBehaviour
     {
         //Renderer renderer = GetComponent<Renderer>();
         //renderer.material.mainTexture = CalculateColor();
+        transform.Rotate(0, -0.02f, 0, Space.World);
     }
 
     void calculate_biggest_Quad()

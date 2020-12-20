@@ -305,8 +305,13 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
         type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
+        type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
         type: 3}
@@ -317,6 +322,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
         type: 3}
@@ -332,16 +342,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071067
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2127c275a28d96846b80b0a44a5dbe2c,
         type: 3}
@@ -391,3 +391,4 @@ MonoBehaviour:
   x_Component: 1000
   y_Component: 1000
   UPPER_BOUND: 1
+  skyboxMaterial: {fileID: 0}

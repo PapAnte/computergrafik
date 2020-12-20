@@ -24,7 +24,7 @@
 		_Ks("Specular Reflectance", Range(0, 1)) = 0.5
 		_Shininess("Shininess", Range(0, 100)) = 100
 
-		_Speed("Speed", Range(0, 1)) = 0.5
+		_Speed("Speed", Range(0, 5)) = 2
 		_NormalMap1("Normal Map 1", 2D) = "bump" {}
 		_NormalMap2("Normal Map 2", 2D) = "bump" {}
 
