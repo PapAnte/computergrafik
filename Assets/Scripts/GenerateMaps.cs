@@ -87,18 +87,13 @@ public class GenerateMaps : MonoBehaviour
 
         calculate_biggest_Quad();
 
-        Renderer rendererheight = GetComponent<Renderer>();
-        rendererheight.material.SetTexture("_HeightMap", CreateTexture());
-        Renderer renderermoisture = GetComponent<Renderer>();
-        renderermoisture.material.SetTexture("_MoistureMap", GenerateMoisture());
-        Renderer renderercolormapland = GetComponent<Renderer>();
-        renderercolormapland.material.SetTexture("_ColorMapLand", GetColorMapLand());
-        Renderer renderercolormapwater = GetComponent<Renderer>();
-        renderercolormapwater.material.SetTexture("_ColorMapWater", GetColorMapWater());
-        Renderer renderernormalmap1 = GetComponent<Renderer>();
-        renderernormalmap1.material.SetTexture("_NormalMap1", GetNormalMap1());
-        Renderer renderernormalmap2 = GetComponent<Renderer>();
-        renderernormalmap2.material.SetTexture("_NormalMap2", GetNormalMap2());
+        Renderer renderer = GetComponent<Renderer>();
+        renderer.material.SetTexture("_HeightMap", CreateTexture());
+        renderer.material.SetTexture("_MoistureMap", GenerateMoisture());
+        renderer.material.SetTexture("_ColorMapLand", GetColorMapLand());
+        renderer.material.SetTexture("_ColorMapWater", GetColorMapWater());
+        renderer.material.SetTexture("_NormalMap1", GetNormalMap1());
+        renderer.material.SetTexture("_NormalMap2", GetNormalMap2());
 
         // Material generieren und als Skybox-Material festlegen
         skyboxMaterial = new Material(Shader.Find("Skybox/Panoramic"));
@@ -108,9 +103,7 @@ public class GenerateMaps : MonoBehaviour
 
     void Update()
     {
-        //Renderer renderer = GetComponent<Renderer>();
-        //renderer.material.mainTexture = CalculateColor();
-        // transform.Rotate(0, -0.04f, 0, Space.World);
+        transform.Rotate(0, -0.04f, 0, Space.World);
     }
 
     void calculate_biggest_Quad()
@@ -119,8 +112,10 @@ public class GenerateMaps : MonoBehaviour
 
         //start diamond square algo
 
-        // Anzahl der Durchläufe. Bsp: 4x4 Matrix, mDivisions = 4, iterations = logarithmus 4 base 2 = 2.0
-        //D.h. es müssen 2x der Diamond Step und 2x der Square Step ausgeführt werden damit alle Vertices berechnet wurden.
+        // Anzahl der Durchläufe. Bsp: 4x4 Matrix, 
+        // mDivisions = 4, iterations = logarithmus 4 base 2 = 2.0
+        // D.h. es müssen 2x der Diamond Step und 2x der Square Step 
+        // ausgeführt werden damit alle Vertices berechnet wurden.
         int iterations = (int)Mathf.Log(mDivisions, 2);
 
         // Anzahl der Vierecke. Zuerst gibt es 1 Viereck
@@ -213,17 +208,15 @@ public class GenerateMaps : MonoBehaviour
         topRight[Zaehler] = mPixel[row, (col + size)];
         botRight[Zaehler] = mPixel[(row + size), (col + size)];
 
-        //Debug.Log("row dia = " + row);
-        //Debug.Log("col dia = " + col);
-        //Debug.Log("size dia = " + size);
-
         int mid_x = ((int)(size * 0.5f) + row);
         int mid_y = ((int)(size * 0.5f) + col);
 
-        //Debug.Log("mid_x = " + mid_x);
-        //Debug.Log("mid_y = " + mid_y);
-
-        mPixel[mid_x, mid_y] = ((topLeft[Zaehler] + topRight[Zaehler] + botLeft[Zaehler] + botLeft[Zaehler]) * 0.25f + Random.Range(-offset, offset));
+        mPixel[mid_x, mid_y] = ((topLeft[Zaehler] 
+                                + topRight[Zaehler] 
+                                + botLeft[Zaehler] 
+                                + botLeft[Zaehler]) 
+                                * 0.25f 
+                                + Random.Range(-offset, offset));
 
         mid[Zaehler] = mPixel[mid_x, mid_y];
 
@@ -242,28 +235,27 @@ public class GenerateMaps : MonoBehaviour
     {
         int halfSize = (int)(size * 0.5f);
 
-        //Debug.Log("Zähler Square Step = " + Zaehler);
-
-        //Debug.Log("halfSize = " + halfSize);
-        //Debug.Log("numSquares = " + numSquares);
-        //Debug.Log("row square = " + row);
-        //Debug.Log("col square = " + col);
-        //Debug.Log("size square = " + size);
-
         //Höhenberechnung für die Vertices links, rechts unterhalb und oberhalb des Mittelpunktes eines Vierecks
-
         if (row == 0 && col == 0)
         {
             int mid_right = (Zaehler + (numSquares - 1));
             int mid_bottom = ((numSquares * numSquares) - numSquares + Zaehler);
 
             //Pixel[oben]
-            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] 
+                                            + topRight[Zaehler] 
+                                            + mid[Zaehler] 
+                                            + mid[mid_bottom]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
 
             //Pixel[links]
-            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] 
+                                            + botLeft[Zaehler] 
+                                            + mid[Zaehler] 
+                                            + mid[mid_right]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
 
         }
         else if (row != 0 && col == 0)
@@ -272,12 +264,19 @@ public class GenerateMaps : MonoBehaviour
             int mid_up = (Zaehler - numSquares);
 
             //Pixel[oben]
-            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] 
+                                            + topRight[Zaehler] + mid[Zaehler] 
+                                            + mid[mid_up]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
 
             //Pixel[links]
-            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] 
+                                            + botLeft[Zaehler] 
+                                            + mid[Zaehler] 
+                                            + mid[mid_right]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
         }
         else if (row == 0 && col != 0)
         {
@@ -285,12 +284,20 @@ public class GenerateMaps : MonoBehaviour
             int mid_left = (Zaehler - 1);
 
             //Pixel[oben]
-            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] 
+                                            + topRight[Zaehler] 
+                                            + mid[Zaehler] 
+                                            + mid[mid_bottom]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
 
             //Pixel[links]
-            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] 
+                                            + botLeft[Zaehler] 
+                                            + mid[Zaehler] 
+                                            + mid[mid_left]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
 
         }
         else
@@ -299,53 +306,85 @@ public class GenerateMaps : MonoBehaviour
             int mid_left = (Zaehler - 1);
 
             //Pixel[oben]
-            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] + topRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel oben wäre [" + row + "][" + (col + halfSize) + "]");
+            mPixel[row, (col + halfSize)] = ((topLeft[Zaehler] 
+                                            + topRight[Zaehler] 
+                                            + mid[Zaehler] 
+                                            + mid[mid_up]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
 
             //Pixel[links]
-            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] + botLeft[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel links wäre [" + (row + halfSize) + "][" + col + "]");
+            mPixel[(row + halfSize), col] = ((topLeft[Zaehler] 
+                                            + botLeft[Zaehler] 
+                                            + mid[Zaehler] 
+                                            + mid[mid_left]) 
+                                            * 0.25f 
+                                            + Random.Range(-offset, offset));
         }
 
-        if ((row >= ((x_Component - 1) - size)) && (col >= ((y_Component - 1) - size)) || ((x_Component - 1) == size))
+        if ((row >= ((x_Component - 1) - size)) && 
+            (col >= ((y_Component - 1) - size)) || 
+            ((x_Component - 1) == size))
         {
             int mid_up = (Zaehler - ((numSquares * numSquares) - numSquares));
             int mid_left = (Zaehler - (numSquares - 1));
 
             //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel else if rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] 
+                                                    + botRight[Zaehler] 
+                                                    + mid[Zaehler] 
+                                                    + mid[mid_left]) 
+                                                    * 0.25f 
+                                                    + Random.Range(-offset, offset));
 
             //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel else if unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] 
+                                                    + mid[Zaehler] 
+                                                    + mid[mid_up]) * 0.25f 
+                                                    + Random.Range(-offset, offset));
         }
-        else if ((col >= ((y_Component - 1) - size)) && (row < ((x_Component - 1) - size)))
+        else if ((col >= ((y_Component - 1) - size)) && 
+                (row < ((x_Component - 1) - size)))
         {
             int mid_left = (Zaehler - (numSquares - 1));
             int mid_bottom = (Zaehler + numSquares);
 
             //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_left]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] 
+                                                    + botRight[Zaehler] 
+                                                    + mid[Zaehler] 
+                                                    + mid[mid_left]) 
+                                                    * 0.25f
+                                                    + Random.Range(-offset, offset));
 
             //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] 
+                                                    + botRight[Zaehler] 
+                                                    + mid[Zaehler] 
+                                                    + mid[mid_bottom]) 
+                                                    * 0.25f 
+                                                    + Random.Range(-offset, offset));
 
         }
-        else if ((row >= ((x_Component - 1) - size)) && (col < ((y_Component - 1) - size)))
+        else if ((row >= ((x_Component - 1) - size)) && 
+                (col < ((y_Component - 1) - size)))
         {
             int mid_up = (Zaehler - ((numSquares * numSquares) - numSquares));
             int mid_right = (Zaehler + 1);
 
             //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] 
+                                                    + botRight[Zaehler] + mid[Zaehler]
+                                                    + mid[mid_right]) 
+                                                    * 0.25f 
+                                                    + Random.Range(-offset, offset));
 
             //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_up]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] 
+                                                    + botRight[Zaehler] + mid[Zaehler] 
+                                                    + mid[mid_up]) 
+                                                    * 0.25f 
+                                                    + Random.Range(-offset, offset));
 
         }
         else
@@ -354,12 +393,18 @@ public class GenerateMaps : MonoBehaviour
             int mid_bottom = (Zaehler + numSquares);
 
             //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_right]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel rechts wäre [" + (row + halfSize) + "][" + (col + size) + "]");
+            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] 
+                                                    + botRight[Zaehler] + mid[Zaehler] 
+                                                    + mid[mid_right]) 
+                                                    * 0.25f 
+                                                    + Random.Range(-offset, offset));
 
             //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] + botRight[Zaehler] + mid[Zaehler] + mid[mid_bottom]) * 0.25f + Random.Range(-offset, offset));
-            //Debug.Log("Pixel unten wäre [" + (row + size) + "][" + (col + halfSize) + "]");
+            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] 
+                                                    + botRight[Zaehler] + mid[Zaehler] 
+                                                    + mid[mid_bottom]) 
+                                                    * 0.25f 
+                                                    + Random.Range(-offset, offset));
         }
 
         Zaehler += 1;
@@ -402,7 +447,8 @@ public class GenerateMaps : MonoBehaviour
 
         //Debug.Log("totaler_Abstand = " + totaler_abstand);
 
-        // pixel farben setzen für jeden Vertice in einer Spalte; das ganze wird Reihe für Reihe durchlaufen
+        // pixel farben setzen für jeden Vertice in einer Spalte; 
+        // das ganze wird Reihe für Reihe durchlaufen
         for (int i = 0; i < y_original; i++)
         {
             for (int j = 0; j < x_original; j++)
@@ -412,11 +458,16 @@ public class GenerateMaps : MonoBehaviour
                 //Die Höhenwerte aller Pixel/Vertices werden zwischen 0 und 1 normiert!
                 mPixel[i, j] = ((ac_height - _MinMaxHeight[0]) / totaler_abstand);
 
-                //Der Höhenwert soll sich zwischen 0 und 1 bewegen, das heißt eine 1 ist der höchste Punkt und damit weiß
-                //weiß ist im RGB code (255, 255, 255) und schwarz (0, 0, 0); damit kann ich jede Höhe, welche in 
-                //y gespeichert ist, mit 255 multiplizieren und erhalte somit eine Grauabstufung von schwarz nach weiß
+                // Der Höhenwert soll sich zwischen 0 und 1 bewegen, 
+                // das heißt eine 1 ist der höchste Punkt und damit weiß
+                // weiß ist im RGB code (255, 255, 255) und schwarz (0, 0, 0); 
+                // damit kann ich jede Höhe,
+                // welche in y gespeichert ist, 
+                // mit 255 multiplizieren und 
+                // erhalte somit eine Grauabstufung von schwarz nach weiß
                 // texture.SetPixel(0, 0, Color(1.0, 1.0, 1.0, 0.5));
-                color = new Color32((byte)(mPixel[i, j] * 255), (byte)(mPixel[i, j] * 255), (byte)(mPixel[i, j] * 255), 255);
+                color = new Color32((byte)(mPixel[i, j] * 255), (byte)(mPixel[i, j] * 255), 
+                        (byte)(mPixel[i, j] * 255), 255);
                 texture.SetPixel(i, j, color);
                 //Debug.Log("Check for: " + i + " " + j + " " + color);
             }
@@ -451,7 +502,8 @@ public class GenerateMaps : MonoBehaviour
             this.width = heightmap.width;
             this.height = heightmap.height;
         }
-        // Existiert die HeightMap unter dem angegeben Pfad nicht, wird die geworfene Exception abgefangen
+        // Existiert die HeightMap unter dem angegeben Pfad nicht, 
+        // wird die geworfene Exception abgefangen
         catch (FileNotFoundException)
         {
             Debug.Log("File HeightMapMap.png not found!");
@@ -463,7 +515,8 @@ public class GenerateMaps : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                // In der Variablen wird die in der Funktion CalculateColorMoisture generierte Farbe gespeichert
+                // In der Variablen wird die in der Funktion 
+                // CalculateColorMoisture generierte Farbe gespeichert
                 Color color = CalculateColorMoisture(x, y);
                 // Der Pixel an der Stelle (x,y) bekommt die vorher generierte Farbe
                 texture.SetPixel(x, y, color);
@@ -473,12 +526,12 @@ public class GenerateMaps : MonoBehaviour
         texture.Apply();
 
         // Generiert ein Bild aus texture
-        // ------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------
         string _fullpath = this.moisturemapPath;
         byte[] _bytes = texture.EncodeToPNG();
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
         Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
-        // ------------------------------------------------------------------------------------------ /
+        // ----------------------------------------------------------------------------------------
         return texture;
     }
 
@@ -489,7 +542,9 @@ public class GenerateMaps : MonoBehaviour
     // Output: Color
     Color CalculateColorMoisture(int x, int y)
     {
-        // Pixelkoordinaten sind ganze Zahlen, daher müssen diese in Dezimalzahlen umgewandelt werden, damit wir unterschiedliche Werte aus PerlinNoise bekommen
+        // Pixelkoordinaten sind ganze Zahlen, 
+        // daher müssen diese in Dezimalzahlen umgewandelt werden, 
+        // damit wir unterschiedliche Werte aus PerlinNoise bekommen
         // Es wird mit scale multipliziert, damit wir eine dichtere PerlinNoise bekommen
         float xCoord = (float)x / width * scale;
         float yCoord = (float)y / height * scale;
