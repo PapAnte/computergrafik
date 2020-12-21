@@ -32,17 +32,13 @@ public class GenerateMaps : MonoBehaviour
     private int height;
     private float scale = 20f;
 
-    public Material skyboxMaterial;
-
     // Pathlocations
     string heightmapPath = ".//Assets//Scripts//image//heightmap.png";
     string moisturemapPath = ".//Assets//Scripts//image//moisturemap.png";
-    string colorMapLandPath = ".//Assets//Scripts//image//colormap_land.png";
+    string colorMapLandPath = ".//Assets//Scripts//image//colormap_land_1.png";
     string colorMapWaterPath = ".//Assets//Scripts//image//colormap_water.png";
     string colorNormalMap1Path = ".//Assets//Scripts//image//normal_map_1.png";
     string colorNormalMap2Path = ".//Assets//Scripts//image//normal_map_2.png";
-
-    string skyboxTexturePath = ".//Assets//Scripts//image//universe.jpg";
 
     // Start is called before the first frame update
     void Start()
@@ -99,18 +95,12 @@ public class GenerateMaps : MonoBehaviour
         renderernormalmap1.material.SetTexture("_NormalMap1", GetNormalMap1());
         Renderer renderernormalmap2 = GetComponent<Renderer>();
         renderernormalmap2.material.SetTexture("_NormalMap2", GetNormalMap2());
-
-        // Material generieren und als Skybox-Material festlegen
-        skyboxMaterial = new Material(Shader.Find("Skybox/Panoramic"));
-        skyboxMaterial.mainTexture = GetSkyboxTexture();
-        RenderSettings.skybox = skyboxMaterial;
     }
 
     void Update()
     {
         //Renderer renderer = GetComponent<Renderer>();
         //renderer.material.mainTexture = CalculateColor();
-        transform.Rotate(0, -0.04f, 0, Space.World);
     }
 
     void calculate_biggest_Quad()
@@ -425,16 +415,15 @@ public class GenerateMaps : MonoBehaviour
         // definierte Pixel anwenden
         texture.Apply();
 
-        // Verbindet die Textur mit dem Material von GameObject, 
-        // an das dieses Skript angehängt ist
+        // Verbindet die Textur mit dem Material von GameObject, an das dieses Skript angehängt ist
         GetComponent<MeshRenderer>().material.mainTexture = texture;
 
-        // ----------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------
         string _fullpath = heightmapPath;
         byte[] _bytes = texture.EncodeToPNG();
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
         Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
-        // ----------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------ /
         return texture;   
     }
 
@@ -540,16 +529,5 @@ public class GenerateMaps : MonoBehaviour
         normalmap.LoadImage(tmpBytes);
 
         return normalmap;
-    }
-
-    // Läd ein Bild aus dem angegeben Pfad und speichert dieses in texture
-    // Output: Texture2D
-    Texture2D GetSkyboxTexture()
-    {
-        Texture2D skyboxTexture = new Texture2D(1, 1);
-        byte[] tmpBytes = File.ReadAllBytes(this.skyboxTexturePath);
-        skyboxTexture.LoadImage(tmpBytes);
-
-        return skyboxTexture;
     }
 }
