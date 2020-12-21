@@ -102,7 +102,7 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.073
     - _Scale: 0
-    - _Shininess: 100
+    - _Shininess: 30
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _Speed: 2
