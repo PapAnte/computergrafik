@@ -68,9 +68,9 @@
 				float4 color : COLOR;
 				half3 texValMoisture : TEXCOORD4;
 				half3 texVal : TEXCOORD5;
-				half3 tspace0 : TEXCOORD7;
-				half3 tspace1 : TEXCOORD8;
-				half3 tspace2 : TEXCOORD9;
+				half3 matrixSpaceX : TEXCOORD7;
+				half3 matrixSpaceY : TEXCOORD8;
+				half3 matrixSpaceZ : TEXCOORD9;
 			};
 
 			float _MaxDepth;
@@ -91,7 +91,8 @@
 
 				// Farben aus der Textur extrahieren
 				vertOutput.texVal = tex2Dlod(_HeightMap, float4(vertInput.texcoord.xy, 0, 0));
-				vertOutput.texValMoisture = tex2Dlod(_MoistureMap, float4(vertInput.texcoord.xy, 0, 0));
+				vertOutput.texValMoisture = tex2Dlod(_MoistureMap, 
+						float4(vertInput.texcoord.xy, 0, 0));
 
 				// Da die Heightmap nur Werte zwischen 0 und 1 besitzt, kann hier darauf geprüft 
 				// werden, ob der "Höhenwert" eines Pixels unterhalb unserer Flüssigkeitsschwelle 
@@ -101,7 +102,8 @@
 					// ist, desto häher erscheint der vertex auf dem Objekt, 
 					// alle Pixel die unter oder auf dem Schwellenwert liegen, erhalten 
 					// denselben Wert
-					vertInput.vertex.xyz += vertInput.normal * _LiquidStartingPoint * _DisplacementExtension;
+					vertInput.vertex.xyz += vertInput.normal * 
+							_LiquidStartingPoint * _DisplacementExtension;
 					vertOutput.vertex = UnityObjectToClipPos(vertInput.vertex);
 
 					vertOutput.worldNormal = UnityObjectToWorldNormal(vertInput.normal);
@@ -112,26 +114,33 @@
 					// des Pixels ist, desto häher erscheint der vertex auf dem Objekt
 					// alle vertex die über dem Schwellwert liegen, erhalten einen neuen Höhenwert, 
 					// abhängig von dem Höhenwert des Pixels
-					vertInput.vertex.xyz += vertInput.normal * _DisplacementExtension * vertOutput.texVal.y;
+					vertInput.vertex.xyz += vertInput.normal * 
+							_DisplacementExtension * vertOutput.texVal.y;
 					vertOutput.vertex = UnityObjectToClipPos(vertInput.vertex);	
 
 					vertOutput.worldNormal = UnityObjectToWorldNormal(vertInput.normal);
 				}
 
+				// Normale, Tangente und Bitangente dieser Szene bestimmen
 				half3 normalMapWorldNormal = UnityObjectToWorldNormal(vertInput.normal);
 				half3 normalMapWorldTangent = UnityObjectToWorldDir(vertInput.tangent);
-				half3 normalMapWorldBitangent = cross(normalMapWorldNormal, normalMapWorldTangent);
+				half3 normalMapWorldBitangent = cross(normalMapWorldNormal, 
+						normalMapWorldTangent);
 
-				vertOutput.tspace0 = half3(normalMapWorldTangent.x, normalMapWorldBitangent.x, 
-											normalMapWorldNormal.x);
-				vertOutput.tspace1 = half3(normalMapWorldTangent.y, normalMapWorldBitangent.y, 
-											normalMapWorldNormal.y);
-				vertOutput.tspace2 = half3(normalMapWorldTangent.z, normalMapWorldBitangent.z, 
-											normalMapWorldNormal.z);
+				// Raum Matrix bestimmen mithilfe der Normalen, Tangenten und 
+				// Bitangenten dieser Szene
+				vertOutput.matrixSpaceX = half3(normalMapWorldTangent.x, normalMapWorldBitangent.x, 
+						normalMapWorldNormal.x);
+				vertOutput.matrixSpaceY = half3(normalMapWorldTangent.y, normalMapWorldBitangent.y, 
+						normalMapWorldNormal.y);
+				vertOutput.matrixSpaceZ = half3(normalMapWorldTangent.z, normalMapWorldBitangent.z, 
+						normalMapWorldNormal.z);
 
+				// Pixel Koordinaten mittels der NormalMaps bestimmen
 				vertOutput.uv = TRANSFORM_TEX(vertInput.texcoord, _NormalMap1);
 				vertOutput.uv += TRANSFORM_TEX(vertInput.texcoord, _NormalMap2);
 				
+				// Bewegung der NormalMaps wird mittels der Zeit und dem variablen Speed bestimmt
 				vertOutput.uv += _Speed * _Time.x;
 
 				return vertOutput;
@@ -151,16 +160,22 @@
 				float4 spec;
 
 				if (fragInput.texVal.y <= _LiquidStartingPoint)
-				{
-					float texValHeight = (_LiquidStartingPoint - fragInput.texVal.y) / (_LiquidStartingPoint);
-					fragInput.color = tex2Dlod(_ColorMapWater, float4(fragInput.texValMoisture.y, texValHeight, 0, 0));
+				{	
+					float texValHeight = (_LiquidStartingPoint - fragInput.texVal.y) / 
+							(_LiquidStartingPoint);
+					fragInput.color = tex2Dlod(_ColorMapWater, float4(fragInput.texValMoisture.y,
+							texValHeight, 0, 0));
 
-					half3 normalizedNormalMaps = normalize(UnpackNormal(tex2D(_NormalMap1, fragInput.uv)) 
-									+ UnpackNormal(tex2D(_NormalMap2, fragInput.uv2)));
+					// Beide NormalMaps zusammenfügen und Normalisieren
+					half3 normalizedNormalMaps = 
+							normalize(UnpackNormal(tex2D(_NormalMap1, fragInput.uv))
+							+ UnpackNormal(tex2D(_NormalMap2, fragInput.uv2)));
 					half3 normal;
-					normal.x = dot(fragInput.tspace0, normalizedNormalMaps);
-					normal.y = dot(fragInput.tspace1, normalizedNormalMaps);
-					normal.z = dot(fragInput.tspace2, normalizedNormalMaps);
+
+					// Normalenvektor mithilfe der NormalMaps bestimmen
+					normal.x = dot(fragInput.matrixSpaceX, normalizedNormalMaps);
+					normal.y = dot(fragInput.matrixSpaceY, normalizedNormalMaps);
+					normal.z = dot(fragInput.matrixSpaceZ, normalizedNormalMaps);
 
 					ambientLight = float4(ShadeSH9(half4(normal,1)),1);
 					
@@ -170,15 +185,18 @@
 
 					worldSpaceReflection = 
 							reflect(normalize(-_WorldSpaceLightPos0.xyz), normal);
-					re = pow(max(dot(worldSpaceReflection, fragInput.worldViewDir), 0), _Shininess);
+					re = pow(max(dot(worldSpaceReflection, 
+							fragInput.worldViewDir), 0), _Shininess);
 					spec = re * _LightColor0;
 					fragInput.color *= (_Ka* ambientLight +  _Kd* diffuseLight);
 					fragInput.color += _Ks * spec;
 				}
 				else
 				{
-					float texValHeight = (fragInput.texVal.y - _LiquidStartingPoint) / (1 - _LiquidStartingPoint);
-					fragInput.color = tex2Dlod(_ColorMapLand, float4(fragInput.texValMoisture.y, texValHeight, 0, 0));
+					float texValHeight = (fragInput.texVal.y - _LiquidStartingPoint) / 
+							(1 - _LiquidStartingPoint);
+					fragInput.color = tex2Dlod(_ColorMapLand, float4(fragInput.texValMoisture.y,
+							texValHeight, 0, 0));
 					
 					// Lambert-Shading
 					// Schafft einen übergang von hell nach dunkel
