@@ -37,7 +37,7 @@ public class GenerateMaps : MonoBehaviour
     // Pathlocations
     string heightmapPath = ".//Assets//Scripts//image//heightmap.png";
     string moisturemapPath = ".//Assets//Scripts//image//moisturemap.png";
-    string colorMapLandPath = ".//Assets//Scripts//image//colormap_land.png";
+    string colorMapLandPath = ".//Assets//Scripts//image//colormap_land_1.png";
     string colorMapWaterPath = ".//Assets//Scripts//image//colormap_water.png";
     string colorNormalMap1Path = ".//Assets//Scripts//image//normal_map_1.png";
     string colorNormalMap2Path = ".//Assets//Scripts//image//normal_map_2.png";

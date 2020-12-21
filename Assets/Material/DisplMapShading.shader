@@ -3,11 +3,11 @@
 	Properties
 	{
 		// Definiere _DisplacementExtension, dieser Wert regelt den Grad des Displacements
-		_DisplacementExtension("Terrain Scale", Range(0, 1)) = 0
+		_DisplacementExtension("Terrain Scale", Range(0, 1)) = 0.5
 		
 		// Definiere _LiquidStartingPoint, dieser Wert legt fest, bei welcher Höhe nur 
 		// noch Flüssigkeit angezeigt werden soll
-		_LiquidStartingPoint("Liquid threshold", Range(0, 1)) = 0
+		_LiquidStartingPoint("Liquid threshold", Range(0, 1)) = 0.7
 
 		// Definiere _HeightMap, _MoistureMap, und _ColorMap, diese können über einen 
 		// Input in der GUI zugewiesen werden
