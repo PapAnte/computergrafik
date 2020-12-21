@@ -60,6 +60,13 @@ public class GenerateMaps : MonoBehaviour
             y_Component = x_original;
         }
 
+        // Bei 65 x 65 muss die untere Bedinung bei 64 true sein.
+        // Sonst würde bei diesem Input ein Quadrat der Fläche 129 x 129 berechnet
+        if (((x_Component - 1) & (x_Component - 2)) == 0)
+        {
+            x_Component -= 1;
+        }
+
         while ((x_Component & (x_Component - 1)) != 0)
         {
             x_Component += 1;
@@ -347,7 +354,6 @@ public class GenerateMaps : MonoBehaviour
                 (row < ((x_Component - 1) - size)))
         {
             int mid_left = (Zaehler - (numSquares - 1));
-            int mid_bottom = (Zaehler + numSquares);
 
             //Pixel[rechts]
             mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] 
@@ -357,27 +363,11 @@ public class GenerateMaps : MonoBehaviour
                                                     * 0.25f
                                                     + Random.Range(-offset, offset));
 
-            //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] 
-                                                    + botRight[Zaehler] 
-                                                    + mid[Zaehler] 
-                                                    + mid[mid_bottom]) 
-                                                    * 0.25f 
-                                                    + Random.Range(-offset, offset));
-
         }
         else if ((row >= ((x_Component - 1) - size)) && 
                 (col < ((y_Component - 1) - size)))
         {
             int mid_up = (Zaehler - ((numSquares * numSquares) - numSquares));
-            int mid_right = (Zaehler + 1);
-
-            //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] 
-                                                    + botRight[Zaehler] + mid[Zaehler]
-                                                    + mid[mid_right]) 
-                                                    * 0.25f 
-                                                    + Random.Range(-offset, offset));
 
             //Pixel[unten]
             mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] 
@@ -386,25 +376,6 @@ public class GenerateMaps : MonoBehaviour
                                                     * 0.25f 
                                                     + Random.Range(-offset, offset));
 
-        }
-        else
-        {
-            int mid_right = (Zaehler + 1);
-            int mid_bottom = (Zaehler + numSquares);
-
-            //Pixel[rechts]
-            mPixel[(row + halfSize), (col + size)] = ((topRight[Zaehler] 
-                                                    + botRight[Zaehler] + mid[Zaehler] 
-                                                    + mid[mid_right]) 
-                                                    * 0.25f 
-                                                    + Random.Range(-offset, offset));
-
-            //Pixel[unten]
-            mPixel[(row + size), (col + halfSize)] = ((botLeft[Zaehler] 
-                                                    + botRight[Zaehler] + mid[Zaehler] 
-                                                    + mid[mid_bottom]) 
-                                                    * 0.25f 
-                                                    + Random.Range(-offset, offset));
         }
 
         Zaehler += 1;
