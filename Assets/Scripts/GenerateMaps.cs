@@ -221,7 +221,7 @@ public class GenerateMaps : MonoBehaviour
         mPixel[mid_x, mid_y] = ((topLeft[Zaehler] 
                                 + topRight[Zaehler] 
                                 + botLeft[Zaehler] 
-                                + botLeft[Zaehler]) 
+                                + botRight[Zaehler]) 
                                 * 0.25f 
                                 + Random.Range(-offset, offset));
 
