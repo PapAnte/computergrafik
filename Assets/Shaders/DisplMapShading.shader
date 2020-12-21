@@ -118,13 +118,16 @@
 					vertOutput.worldNormal = UnityObjectToWorldNormal(vertInput.normal);
 				}
 
-				half3 wNormal = UnityObjectToWorldNormal(vertInput.normal);
-				half3 wTangent = UnityObjectToWorldDir(vertInput.tangent);
-				half3 wBitangent = cross(wNormal, wTangent);
+				half3 normalMapWorldNormal = UnityObjectToWorldNormal(vertInput.normal);
+				half3 normalMapWorldTangent = UnityObjectToWorldDir(vertInput.tangent);
+				half3 normalMapWorldBitangent = cross(normalMapWorldNormal, normalMapWorldTangent);
 
-				vertOutput.tspace0 = half3(wTangent.x, wBitangent.x, wNormal.x);
-				vertOutput.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
-				vertOutput.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
+				vertOutput.tspace0 = half3(normalMapWorldTangent.x, normalMapWorldBitangent.x, 
+											normalMapWorldNormal.x);
+				vertOutput.tspace1 = half3(normalMapWorldTangent.y, normalMapWorldBitangent.y, 
+											normalMapWorldNormal.y);
+				vertOutput.tspace2 = half3(normalMapWorldTangent.z, normalMapWorldBitangent.z, 
+											normalMapWorldNormal.z);
 
 				vertOutput.uv = TRANSFORM_TEX(vertInput.texcoord, _NormalMap1);
 				vertOutput.uv += TRANSFORM_TEX(vertInput.texcoord, _NormalMap2);
@@ -152,12 +155,12 @@
 					float texValHeight = (_LiquidStartingPoint - fragInput.texVal.y) / (_LiquidStartingPoint);
 					fragInput.color = tex2Dlod(_ColorMapWater, float4(fragInput.texValMoisture.y, texValHeight, 0, 0));
 
-					half3 tnormal = normalize(UnpackNormal(tex2D(_NormalMap1, fragInput.uv)) 
+					half3 normalizedNormalMaps = normalize(UnpackNormal(tex2D(_NormalMap1, fragInput.uv)) 
 									+ UnpackNormal(tex2D(_NormalMap2, fragInput.uv2)));
 					half3 normal;
-					normal.x = dot(fragInput.tspace0, tnormal);
-					normal.y = dot(fragInput.tspace1, tnormal);
-					normal.z = dot(fragInput.tspace2, tnormal);
+					normal.x = dot(fragInput.tspace0, normalizedNormalMaps);
+					normal.y = dot(fragInput.tspace1, normalizedNormalMaps);
+					normal.z = dot(fragInput.tspace2, normalizedNormalMaps);
 
 					ambientLight = float4(ShadeSH9(half4(normal,1)),1);
 					
