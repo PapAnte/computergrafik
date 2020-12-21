@@ -42,7 +42,7 @@ public class GenerateMaps : MonoBehaviour
     string colorNormalMap1Path = ".//Assets//Scripts//image//normal_map_1.png";
     string colorNormalMap2Path = ".//Assets//Scripts//image//normal_map_2.png";
 
-    string skyboxTexturePath = ".//Assets//Scripts//image//universe.jpg";
+    string skyboxTexturePath = ".//Assets//Scripts//image//universeStarWars.png";
 
     // Start is called before the first frame update
     void Start()
