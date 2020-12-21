@@ -110,7 +110,7 @@ public class GenerateMaps : MonoBehaviour
 
     void Update()
     {
-        transform.Rotate(0, -0.1f, 0, Space.World);
+        transform.Rotate(0, -0.05f, 0, Space.World);
     }
 
     void calculate_biggest_Quad()
