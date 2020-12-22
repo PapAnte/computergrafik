@@ -129,11 +129,11 @@
 
 				// Raum Matrix bestimmen mithilfe der Normalen, Tangenten und 
 				// Bitangenten dieser Szene
-				vertOutput.matrixSpaceX = half3(normalMapWorldTangent.x, normalMapWorldBitangent.x, 
+				vertOutput.matrixSpaceX = half3(normalMapWorldTangent.x, normalMapWorldBitangent.x,
 						normalMapWorldNormal.x);
-				vertOutput.matrixSpaceY = half3(normalMapWorldTangent.y, normalMapWorldBitangent.y, 
+				vertOutput.matrixSpaceY = half3(normalMapWorldTangent.y, normalMapWorldBitangent.y,
 						normalMapWorldNormal.y);
-				vertOutput.matrixSpaceZ = half3(normalMapWorldTangent.z, normalMapWorldBitangent.z, 
+				vertOutput.matrixSpaceZ = half3(normalMapWorldTangent.z, normalMapWorldBitangent.z,
 						normalMapWorldNormal.z);
 
 				// Pixel Koordinaten mittels der NormalMaps bestimmen
@@ -161,8 +161,14 @@
 
 				if (fragInput.texVal.y <= _LiquidStartingPoint)
 				{	
+					// Hier muss der Wert der Heightmap,
+					// der später als y-Wert auf der ColorMap genutzt wird,
+					// angepasst werden, da wir 2 Colormaps nutzen
 					float texValHeight = (_LiquidStartingPoint - fragInput.texVal.y) / 
 							(_LiquidStartingPoint);
+					// Hier wird sich die Farbe aus der ColorMap geholt
+					// an der Stelle x (Wert der MoistureMap)
+					// und der Stelle y (Wert der HeightMap)
 					fragInput.color = tex2Dlod(_ColorMapWater, float4(fragInput.texValMoisture.y,
 							texValHeight, 0, 0));
 
@@ -193,8 +199,14 @@
 				}
 				else
 				{
+					// Hier muss der Wert der Heightmap,
+					// der später als y-Wert auf der ColorMap genutzt wird,
+					// angepasst werden, da wir 2 Colormaps nutzen
 					float texValHeight = (fragInput.texVal.y - _LiquidStartingPoint) / 
 							(1 - _LiquidStartingPoint);
+					// Hier wird sich die Farbe aus der ColorMap geholt
+					// an der Stelle x (Wert der MoistureMap)
+					// und der Stelle y (Wert der HeightMap)
 					fragInput.color = tex2Dlod(_ColorMapLand, float4(fragInput.texValMoisture.y,
 							texValHeight, 0, 0));
 					

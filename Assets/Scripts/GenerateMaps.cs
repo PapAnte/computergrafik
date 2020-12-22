@@ -5,23 +5,23 @@ using System.IO;
 
 public class GenerateMaps : MonoBehaviour
 {
-    //Auflösung der Fläche in Pixel
-    //x_Component = Anzahl der horizontalen Pixel 
+    // Auflösung der Fläche in Pixel
+    // x_Component = Anzahl der horizontalen Pixel 
     public int x_Component;
     int x_original;
 
-    //y_Component = Anzahl der senkrechten Pixel
+    // y_Component = Anzahl der senkrechten Pixel
     public int y_Component;
     int y_original;
 
-    //Array für die Matrix
+    // Array für die Matrix
     float[,] mPixel;
     int mPixelCount;
 
-    //Höhengrenze
+    // Höhengrenze
     public int UPPER_BOUND = 1;
 
-    //Eckpunkte des Quadrats mit Höheninformation
+    // Eckpunkte des Quadrats mit Höheninformation
     int Zaehler = 0;
     float[] topLeft;
     float[] botLeft;
@@ -29,8 +29,10 @@ public class GenerateMaps : MonoBehaviour
     float[] botRight;
     float[] mid;
 
-    //
+    // Attribute zum Verfeinern der MoistureMap
     private float scale = 20f;
+
+    // Heightmap zum Abfragen der Dimensionen
     private Texture2D heightmap;
 
     public Material skyboxMaterial;
