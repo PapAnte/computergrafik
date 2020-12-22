@@ -30,8 +30,6 @@ public class GenerateMaps : MonoBehaviour
     float[] mid;
 
     //
-    //private int width;
-    //private int height;
     private float scale = 20f;
     private Texture2D heightmap;
 
@@ -144,13 +142,14 @@ public class GenerateMaps : MonoBehaviour
             int row_square = 0;
             int anzahl = numSquares * numSquares;
 
+            //Init der Eckpunkt_Arrays
             topLeft = new float[anzahl];
             topRight = new float[anzahl];
             botLeft = new float[anzahl];
             botRight = new float[anzahl];
             mid = new float[anzahl];
 
-            //Schleife für das Iterrieren der Zeilen.
+            //Schleife für das Iterrieren der Zeilen des DiamondSteps.
             for (int j = 0; j < numSquares; j++)
             {
                 int col_dia = 0;
@@ -158,6 +157,7 @@ public class GenerateMaps : MonoBehaviour
                 //Schleife für das Iterrieren der Splaten des DiamondSteps
                 for (int k = 0; k < numSquares; k++)
                 {
+                    //Aufruf DiamondStep
                     diamondStep(row_dia, col_dia, squareSize, smothness);
 
                     //Das nächste Viereck von links nach rechts wird berechnet
@@ -168,14 +168,15 @@ public class GenerateMaps : MonoBehaviour
                 row_dia += squareSize;
             }
 
+            //Zähler für die Eckpunkt_Arrays wird reseted
             Zaehler = 0;
 
-            //Schleife für das Iterrieren der Zeilen.
+            //Schleife für das Iterrieren der Zeilen des SquareSteps.
             for (int j = 0; j < numSquares; j++)
             {
                 int col_square = 0;
 
-                //Schleife für das Iterrieren der Splaten des DiamondSteps
+                //Schleife für das Iterrieren der Splaten des SquareSteps.
                 for (int k = 0; k < numSquares; k++)
                 {
                     squareStep(row_square, col_square, squareSize, smothness, numSquares);
@@ -198,6 +199,7 @@ public class GenerateMaps : MonoBehaviour
             //Kann angepasst werden.
             smothness *= 0.5f;
 
+            //Zähler für die Eckpunkt_Arrays wird reseted
             Zaehler = 0;
         }
     }
@@ -213,14 +215,19 @@ public class GenerateMaps : MonoBehaviour
 
         //Debug.Log("Zähler Dia Step = " + Zaehler);
 
+        //Eckpunkte bekommen die vorhandene Höheninformatio
+        //des aktuellen Vierecks
         topLeft[Zaehler] = mPixel[row, col];
         botLeft[Zaehler] = mPixel[(row + size), col];
         topRight[Zaehler] = mPixel[row, (col + size)];
         botRight[Zaehler] = mPixel[(row + size), (col + size)];
 
+        //X und Y Koordinate des Mittelpunktes werden berechnet
         int mid_x = ((int)(size * 0.5f) + row);
         int mid_y = ((int)(size * 0.5f) + col);
 
+        //Random Höheninformation für den Mittelpunkt
+        //wird berechnet.
         mPixel[mid_x, mid_y] = ((topLeft[Zaehler] 
                                 + topRight[Zaehler] 
                                 + botLeft[Zaehler] 
@@ -228,8 +235,11 @@ public class GenerateMaps : MonoBehaviour
                                 * 0.25f 
                                 + Random.Range(-offset, offset));
 
+        //Höheninformation wird im Mittelpunkt_Array gespeichert.
         mid[Zaehler] = mPixel[mid_x, mid_y];
 
+        //Zähler wird erhöht, beschreibt das berechnete Viereck
+        //Bsp: 0 = erstes Viereck, 1 = das nächste Viereck rechts von Viereck 0
         Zaehler += 1;
 
     }
@@ -243,12 +253,20 @@ public class GenerateMaps : MonoBehaviour
     //numSquares: Gibt die Anzahl der Vierecke pro Zeile an
     void squareStep(int row, int col, int size, float offset, int numSquares)
     {
+
+        //Berechnung der halbierten Größe des Vierecks.
         int halfSize = (int)(size * 0.5f);
 
         //Höhenberechnung für die Vertices links, rechts unterhalb und oberhalb des Mittelpunktes eines Vierecks
+
+        //Abfrage nach dem Viereck welches an der linken und oberen Kante des Bildes liegt.
+        //Für dieses Viereck muss der obere und linke Pixel besonders berechnet werden.
         if (row == 0 && col == 0)
         {
+            // Berechnung des letzten Mittelpunktes einer Zeile
             int mid_right = (Zaehler + (numSquares - 1));
+
+            // Berechnung des letzten Mittelpunktes einer Spalte
             int mid_bottom = ((numSquares * numSquares) - numSquares + Zaehler);
 
             //Pixel[oben]
@@ -268,9 +286,16 @@ public class GenerateMaps : MonoBehaviour
                                             + Random.Range(-offset, offset));
 
         }
+
+        //Abfrage nach Vierecken, die an der linken Kante des Bildes liegen.
+        //Für diese Vierecke muss der linke Pixel besonders berechnet werden.
         else if (row != 0 && col == 0)
         {
+
+            // Berechnung des letzten Mittelpunktes einer Zeile
             int mid_right = (Zaehler + (numSquares - 1));
+
+            // Berechnung des Mittelpunktes über dem Viereck
             int mid_up = (Zaehler - numSquares);
 
             //Pixel[oben]
@@ -288,9 +313,15 @@ public class GenerateMaps : MonoBehaviour
                                             * 0.25f 
                                             + Random.Range(-offset, offset));
         }
+
+        //Abfrage nach Vierecken, die an der oberen Kante des Bildes liegen.
+        //Für diese Vierecke muss der obere Pixel besonders berechnet werden.
         else if (row == 0 && col != 0)
         {
+            // Berechnung des letzten Mittelpunktes einer Spalte
             int mid_bottom = ((numSquares * numSquares) - numSquares + Zaehler);
+
+            // Berechnung des Mittelpunktes links vom Viereck
             int mid_left = (Zaehler - 1);
 
             //Pixel[oben]
@@ -310,9 +341,14 @@ public class GenerateMaps : MonoBehaviour
                                             + Random.Range(-offset, offset));
 
         }
+
+        //Alle anderen Vierecke
         else
         {
+            // Berechnung des Mittelpunktes über dem Viereck
             int mid_up = (Zaehler - numSquares);
+
+            // Berechnung des Mittelpunktes links vom Viereck
             int mid_left = (Zaehler - 1);
 
             //Pixel[oben]
@@ -332,11 +368,18 @@ public class GenerateMaps : MonoBehaviour
                                             + Random.Range(-offset, offset));
         }
 
+        //Berechnung der fehlenden Pixel, die an der rechten und unteren Kante des Bildes liegen.
+
+        //Das letzte Viereck eines Bildes unten rechts benötigt die Berechnung
+        //des unteren und rechten Pixels.
         if ((row >= ((x_Component - 1) - size)) && 
             (col >= ((y_Component - 1) - size)) || 
             ((x_Component - 1) == size))
         {
+            // Berechnung des ersten Mittelpunktes einer Spalte
             int mid_up = (Zaehler - ((numSquares * numSquares) - numSquares));
+
+            //Berechnung des ersten Mittelpunktes einer Zeile
             int mid_left = (Zaehler - (numSquares - 1));
 
             //Pixel[rechts]
@@ -353,9 +396,13 @@ public class GenerateMaps : MonoBehaviour
                                                     + mid[mid_up]) * 0.25f 
                                                     + Random.Range(-offset, offset));
         }
+
+        //Vierecke die an der rechten Kante sind benötigen den fehlenden rechten Pixel.
         else if ((col >= ((y_Component - 1) - size)) && 
                 (row < ((x_Component - 1) - size)))
         {
+
+            //Berechnung des ersten Mittelpunktes einer Zeile
             int mid_left = (Zaehler - (numSquares - 1));
 
             //Pixel[rechts]
@@ -367,9 +414,12 @@ public class GenerateMaps : MonoBehaviour
                                                     + Random.Range(-offset, offset));
 
         }
+
+        //Vierecke die an der unteren Kante sind benötigen den fehlenden unteren Pixel.
         else if ((row >= ((x_Component - 1) - size)) && 
                 (col < ((y_Component - 1) - size)))
         {
+            // Berechnung des ersten Mittelpunktes einer Spalte
             int mid_up = (Zaehler - ((numSquares * numSquares) - numSquares));
 
             //Pixel[unten]
@@ -381,6 +431,7 @@ public class GenerateMaps : MonoBehaviour
 
         }
 
+        //Zähler wird erhöht, gleiche Funktion wie im Diamond Step
         Zaehler += 1;
 
     }
