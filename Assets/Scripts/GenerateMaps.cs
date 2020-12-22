@@ -30,9 +30,10 @@ public class GenerateMaps : MonoBehaviour
     float[] mid;
 
     //
-    private int width;
-    private int height;
+    //private int width;
+    //private int height;
     private float scale = 20f;
+    private Texture2D heightmap;
 
     public Material skyboxMaterial;
 
@@ -459,6 +460,7 @@ public class GenerateMaps : MonoBehaviour
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
         Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
         // ----------------------------------------------------------------------------------------
+        this.heightmap = texture;
         return texture;   
     }
 
@@ -466,27 +468,12 @@ public class GenerateMaps : MonoBehaviour
     // Output: Texture2D texture
     Texture2D GenerateMoisture()
     {
-        // Laden der HeightMap um deren Dimensionen zu bestimmen
-        try
-        {
-            Texture2D heightmap = new Texture2D(1, 1);
-            byte[] tmpBytes = File.ReadAllBytes(this.heightmapPath);
-            heightmap.LoadImage(tmpBytes);
-            this.width = heightmap.width;
-            this.height = heightmap.height;
-        }
-        // Existiert die HeightMap unter dem angegeben Pfad nicht, 
-        // wird die geworfene Exception abgefangen
-        catch (FileNotFoundException)
-        {
-            Debug.Log("File HeightMapMap.png not found!");
-        }
         // Erstellen der texture in die die MoistureMap gespeichert wird
-        Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+        Texture2D texture = new Texture2D(heightmap.width, heightmap.height, TextureFormat.ARGB32, false);
         // Durchläuft die komplette Weite und Höhe und bestimmt je Pixel die Farbe
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < heightmap.width; x++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < heightmap.height; y++)
             {
                 // In der Variablen wird die in der Funktion 
                 // CalculateColorMoisture generierte Farbe gespeichert
@@ -519,8 +506,8 @@ public class GenerateMaps : MonoBehaviour
         // daher müssen diese in Dezimalzahlen umgewandelt werden, 
         // damit wir unterschiedliche Werte aus PerlinNoise bekommen
         // Es wird mit scale multipliziert, damit wir eine dichtere PerlinNoise bekommen
-        float xCoord = (float)x / width * scale;
-        float yCoord = (float)y / height * scale;
+        float xCoord = (float)x / heightmap.width * scale;
+        float yCoord = (float)y / heightmap.height * scale;
         // Berechnung der PerlinNoise-Wertes mit den x und y Koordinaten
         float perlin = Mathf.PerlinNoise(xCoord, yCoord);
         return new Color(perlin, perlin, perlin);
