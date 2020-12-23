@@ -535,7 +535,7 @@ public class GenerateMaps : MonoBehaviour
                 texture.SetPixel(x, y, color);
             }
         }
-        // Apply the changes to the texture and upload the updated texture to the GPU
+        // definierte Pixel anwenden
         texture.Apply();
 
         // Generiert ein Bild aus texture
@@ -557,12 +557,15 @@ public class GenerateMaps : MonoBehaviour
     {
         // Pixelkoordinaten sind ganze Zahlen, 
         // daher müssen diese in Dezimalzahlen umgewandelt werden, 
-        // damit wir unterschiedliche Werte aus PerlinNoise bekommen
+        // damit wir unterschiedliche Werte aus PerlinNoise bekommen.
         // Es wird mit scale multipliziert, damit wir eine dichtere PerlinNoise bekommen
         float xCoord = (float)x / heightmap.width * scale;
         float yCoord = (float)y / heightmap.height * scale;
         // Berechnung der PerlinNoise-Wertes mit den x und y Koordinaten
+        // Werte liegen für gewöhnlich zwischen 0 und 1
         float perlin = Mathf.PerlinNoise(xCoord, yCoord);
+        // Erstellt eine Farbe als Rückgabewert aus den PerlinNoisewert
+        // Weiß, Schwarz und Grauabstufungen
         return new Color(perlin, perlin, perlin);
     }
 

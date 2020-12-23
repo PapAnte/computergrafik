@@ -159,8 +159,8 @@
 				fixed4 color;
 
 				// Variablen deklarieren
-				half re;
-				half nl;
+				half reflection;
+				half diffuse;
 				float4 ambientLight;
 				float4 diffuseLight;
 				float3 worldSpaceReflection;
@@ -195,14 +195,14 @@
 					ambientLight = float4(ShadeSH9(half4(normal,1)),1);
 					// Standard Diffuse zwischen dem Normalen-Vektor 'normal' und
 					// der Richtung der Beleutchtungsquelle '_WorldSpaceLightPos0'
-					nl = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
-					// Verrechnung des Diffusen Licht 'nl' mit der Lichtfarbe '_LightColor0'
-					float4 diffuseLight = nl * _LightColor0;
+					diffuse = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
+					// Verrechnung des Diffusen Licht 'diffuse' mit der Lichtfarbe '_LightColor0'
+					float4 diffuseLight = diffuse * _LightColor0;
 					worldSpaceReflection = 
 							reflect(normalize(-_WorldSpaceLightPos0.xyz), normal);
-					re = pow(max(dot(worldSpaceReflection, 
+					reflection = pow(max(dot(worldSpaceReflection, 
 							fragInput.worldViewDir), 0), _Shininess);
-					spec = re * _LightColor0;
+					spec = reflection * _LightColor0;
 					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
 					fragInput.color *= (_Ka* ambientLight +  _Kd* diffuseLight);
 					fragInput.color += _Ks * spec;
@@ -226,9 +226,9 @@
 					ambientLight = float4(ShadeSH9(half4(fragInput.worldNormal, 1)), 1);
 					// Standard Diffuse zwischen dem Normalen-Vektor 'normal' und
 					// der Richtung der Beleutchtungsquelle '_WorldSpaceLightPos0'
-					nl = max(0, dot(fragInput.worldNormal, _WorldSpaceLightPos0.xyz));
-					// Verrechnung des Diffusen Licht 'nl' mit der Lichtfarbe '_LightColor0'
-					diffuseLight = nl * _LightColor0;
+					diffuse = max(0, dot(fragInput.worldNormal, _WorldSpaceLightPos0.xyz));
+					// Verrechnung des Diffusen Licht 'diffuse' mit der Lichtfarbe '_LightColor0'
+					diffuseLight = diffuse * _LightColor0;
 
 					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
 					fragInput.color *= (_Ka * ambientLight +  _Kd * diffuseLight);
