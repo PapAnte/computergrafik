@@ -99,14 +99,18 @@
 				// liegt
 				if (vertOutput.texVal.y <= _LiquidStartingPoint) {
 					// Hier wird das Displacement angewandt, je Höher der "Höhenwert" des Pixels 
-					// ist, desto häher erscheint der vertex auf dem Objekt, 
+					// ist, desto höher erscheint der vertex auf dem Objekt, 
 					// alle Pixel die unter oder auf dem Schwellenwert liegen, erhalten 
 					// denselben Wert
 					vertInput.vertex.xyz += vertInput.normal * 
 							_LiquidStartingPoint * _DisplacementExtension;
+					// Start der Berechnungen für den Phong-Algorithmus, da die Pixel unterhalb
+					// der Flüssigkeitsschwelle liegen
+					// Vertices von Objekt-Koordinaten in Clip-Koordinaten transformiern
 					vertOutput.vertex = UnityObjectToClipPos(vertInput.vertex);
-
+					// Normalen-Vektoren transformieren in Welt-Koordinaten
 					vertOutput.worldNormal = UnityObjectToWorldNormal(vertInput.normal);
+					// Blickrichtung in Welt-Koordinaten berechnen
 					vertOutput.worldViewDir = normalize(WorldSpaceViewDir(vertInput.vertex));
 				}
 				else {
@@ -116,8 +120,11 @@
 					// abhängig von dem Höhenwert des Pixels
 					vertInput.vertex.xyz += vertInput.normal * 
 							_DisplacementExtension * vertOutput.texVal.y;
+					// Start der Berechnung für den Lambert-Algorithmus, da die Pixel überhalb
+					// der Flüssigkeitsschwelle liegen
+					// Vertices von Objekt-Koordinaten in Clip-Koordinaten transformiern
 					vertOutput.vertex = UnityObjectToClipPos(vertInput.vertex);	
-
+					// Normalen-Vektoren transformieren in Welt-Koordinaten
 					vertOutput.worldNormal = UnityObjectToWorldNormal(vertInput.normal);
 				}
 
@@ -151,7 +158,7 @@
 			{
 				fixed4 color;
 
-				//Variablen
+				// Variablen deklarieren
 				half re;
 				half nl;
 				float4 ambientLight;
@@ -182,18 +189,21 @@
 					normal.x = dot(fragInput.matrixSpaceX, normalizedNormalMaps);
 					normal.y = dot(fragInput.matrixSpaceY, normalizedNormalMaps);
 					normal.z = dot(fragInput.matrixSpaceZ, normalizedNormalMaps);
-
+					// Durchführung der Berechnungen für den Phong-Algorithmus,
+					// bekannt aus der Übung 5.1 - Lambert und Phong Beleuchtung
+					// Berechnung der ambienten Licht Farbe
 					ambientLight = float4(ShadeSH9(half4(normal,1)),1);
-					
+					// Standard Diffuse zwischen dem Normalen-Vektor 'normal' und
+					// der Richtung der Beleutchtungsquelle '_WorldSpaceLightPos0'
 					nl = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
-
+					// Verrechnung des Diffusen Licht 'nl' mit der Lichtfarbe '_LightColor0'
 					float4 diffuseLight = nl * _LightColor0;
-
 					worldSpaceReflection = 
 							reflect(normalize(-_WorldSpaceLightPos0.xyz), normal);
 					re = pow(max(dot(worldSpaceReflection, 
 							fragInput.worldViewDir), 0), _Shininess);
 					spec = re * _LightColor0;
+					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
 					fragInput.color *= (_Ka* ambientLight +  _Kd* diffuseLight);
 					fragInput.color += _Ks * spec;
 				}
@@ -210,10 +220,14 @@
 					fragInput.color = tex2Dlod(_ColorMapLand, float4(fragInput.texValMoisture.y,
 							texValHeight, 0, 0));
 					
-					// Lambert-Shading
-					// Schafft einen übergang von hell nach dunkel
+					// Durchführung der Berechnungen für den Lambert-Algorithmus,
+					// bekannt aus der Übung 5.1 - Lambert und Phong Beleuchtung
+					// Berechnung der ambienten Licht Farbe
 					ambientLight = float4(ShadeSH9(half4(fragInput.worldNormal, 1)), 1);
+					// Standard Diffuse zwischen dem Normalen-Vektor 'normal' und
+					// der Richtung der Beleutchtungsquelle '_WorldSpaceLightPos0'
 					nl = max(0, dot(fragInput.worldNormal, _WorldSpaceLightPos0.xyz));
+					// Verrechnung des Diffusen Licht 'nl' mit der Lichtfarbe '_LightColor0'
 					diffuseLight = nl * _LightColor0;
 
 					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
