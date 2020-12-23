@@ -214,9 +214,6 @@ public class GenerateMaps : MonoBehaviour
     //offset: Gibt den Höhenwert an
     void diamondStep(int row, int col, int size, float offset)
     {
-
-        //Debug.Log("Zähler Dia Step = " + Zaehler);
-
         //Eckpunkte bekommen die vorhandene Höheninformatio
         //des aktuellen Vierecks
         topLeft[Zaehler] = mPixel[row, col];
