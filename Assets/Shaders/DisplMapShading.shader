@@ -189,13 +189,16 @@
 					normal.x = dot(fragInput.matrixSpaceX, normalizedNormalMaps);
 					normal.y = dot(fragInput.matrixSpaceY, normalizedNormalMaps);
 					normal.z = dot(fragInput.matrixSpaceZ, normalizedNormalMaps);
+
 					// Durchführung der Berechnungen für den Phong-Algorithmus,
 					// bekannt aus der Übung 5.1 - Lambert und Phong Beleuchtung
 					// Berechnung der ambienten Licht Farbe
 					ambientLight = float4(ShadeSH9(half4(normal,1)),1);
+
 					// Standard Diffuse zwischen dem Normalen-Vektor 'normal' und
 					// der Richtung der Beleutchtungsquelle '_WorldSpaceLightPos0'
 					diffuse = max(0, dot(normal, _WorldSpaceLightPos0.xyz));
+
 					// Verrechnung des Diffusen Licht 'diffuse' mit der Lichtfarbe '_LightColor0'
 					float4 diffuseLight = diffuse * _LightColor0;
 					worldSpaceReflection = 
@@ -203,6 +206,7 @@
 					reflection = pow(max(dot(worldSpaceReflection, 
 							fragInput.worldViewDir), 0), _Shininess);
 					spec = reflection * _LightColor0;
+
 					// Farbe wird mit dem diffusen und ambiente Licht anteilig verrechnet
 					fragInput.color *= (_Ka* ambientLight +  _Kd* diffuseLight);
 					fragInput.color += _Ks * spec;
@@ -214,6 +218,7 @@
 					// angepasst werden, da wir 2 Colormaps nutzen
 					float texValHeight = (fragInput.texVal.y - _LiquidStartingPoint) / 
 							(1 - _LiquidStartingPoint);
+
 					// Hier wird sich die Farbe aus der ColorMap geholt
 					// an der Stelle x (Wert der MoistureMap)
 					// und der Stelle y (Wert der HeightMap)
@@ -224,9 +229,11 @@
 					// bekannt aus der Übung 5.1 - Lambert und Phong Beleuchtung
 					// Berechnung der ambienten Licht Farbe
 					ambientLight = float4(ShadeSH9(half4(fragInput.worldNormal, 1)), 1);
+
 					// Standard Diffuse zwischen dem Normalen-Vektor 'normal' und
 					// der Richtung der Beleutchtungsquelle '_WorldSpaceLightPos0'
 					diffuse = max(0, dot(fragInput.worldNormal, _WorldSpaceLightPos0.xyz));
+
 					// Verrechnung des Diffusen Licht 'diffuse' mit der Lichtfarbe '_LightColor0'
 					diffuseLight = diffuse * _LightColor0;
 

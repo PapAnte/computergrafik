@@ -12,7 +12,8 @@ public class DirLightMovement : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {   
+        // Planet dreht sich um die eigene y-Achse
         transform.RotateAround(new Vector3(0.0f, 1.0f, 0.0f), Vector3.up, 9 * Time.deltaTime);
     }
 }

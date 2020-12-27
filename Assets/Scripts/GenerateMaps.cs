@@ -80,8 +80,6 @@ public class GenerateMaps : MonoBehaviour
         x_Component += 1;
         y_Component = x_Component;
 
-        //Debug.Log("Folgendes Quadrat wird berechnet: x = " + x_Component + "y = " + y_Component);
-
         //Bsp: Array mPixel[65,65]
         mPixel = new float[x_Component, y_Component];
 
@@ -256,7 +254,8 @@ public class GenerateMaps : MonoBehaviour
         //Berechnung der halbierten Größe des Vierecks.
         int halfSize = (int)(size * 0.5f);
 
-        //Höhenberechnung für die Vertices links, rechts unterhalb und oberhalb des Mittelpunktes eines Vierecks
+        //Höhenberechnung für die Vertices links, rechts unterhalb und 
+        //oberhalb des Mittelpunktes eines Vierecks
 
         //Abfrage nach dem Viereck welches an der linken und oberen Kante des Bildes liegt.
         //Für dieses Viereck muss der obere und linke Pixel besonders berechnet werden.
@@ -469,8 +468,6 @@ public class GenerateMaps : MonoBehaviour
         //totaler_abstand enthält die Entfernung zwischen Max und Min.
         float totaler_abstand = _MinMaxHeight[1] - _MinMaxHeight[0];
 
-        //Debug.Log("totaler_Abstand = " + totaler_abstand);
-
         // pixel farben setzen für jeden Vertice in einer Spalte; 
         // das ganze wird Reihe für Reihe durchlaufen
         for (int i = 0; i < y_original; i++)
@@ -493,7 +490,6 @@ public class GenerateMaps : MonoBehaviour
                 color = new Color32((byte)(mPixel[i, j] * 255), (byte)(mPixel[i, j] * 255), 
                         (byte)(mPixel[i, j] * 255), 255);
                 texture.SetPixel(i, j, color);
-                //Debug.Log("Check for: " + i + " " + j + " " + color);
             }
         }
 
@@ -508,7 +504,6 @@ public class GenerateMaps : MonoBehaviour
         string _fullpath = heightmapPath;
         byte[] _bytes = texture.EncodeToPNG();
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
-        Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
         // ----------------------------------------------------------------------------------------
         this.heightmap = texture;
         return texture;   
@@ -519,7 +514,8 @@ public class GenerateMaps : MonoBehaviour
     Texture2D GenerateMoisture()
     {
         // Erstellen der texture in die die MoistureMap gespeichert wird
-        Texture2D texture = new Texture2D(heightmap.width, heightmap.height, TextureFormat.ARGB32, false);
+        Texture2D texture = 
+            new Texture2D(heightmap.width, heightmap.height, TextureFormat.ARGB32, false);
         // Durchläuft die komplette Weite und Höhe und bestimmt je Pixel die Farbe
         for (int x = 0; x < heightmap.width; x++)
         {
@@ -535,12 +531,11 @@ public class GenerateMaps : MonoBehaviour
         // definierte Pixel anwenden
         texture.Apply();
 
-        // Generiert ein Bild aus texture
+        // Generiert ein Bild aus der texture
         // ----------------------------------------------------------------------------------------
         string _fullpath = this.moisturemapPath;
         byte[] _bytes = texture.EncodeToPNG();
         System.IO.File.WriteAllBytes(_fullpath, _bytes);
-        Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullpath);
         // ----------------------------------------------------------------------------------------
         return texture;
     }
@@ -558,9 +553,11 @@ public class GenerateMaps : MonoBehaviour
         // Es wird mit scale multipliziert, damit wir eine dichtere PerlinNoise bekommen
         float xCoord = (float)x / heightmap.width * scale;
         float yCoord = (float)y / heightmap.height * scale;
+
         // Berechnung der PerlinNoise-Wertes mit den x und y Koordinaten
         // Werte liegen für gewöhnlich zwischen 0 und 1
         float perlin = Mathf.PerlinNoise(xCoord, yCoord);
+
         // Erstellt eine Farbe als Rückgabewert aus den PerlinNoisewert
         // Weiß, Schwarz und Grauabstufungen
         return new Color(perlin, perlin, perlin);
